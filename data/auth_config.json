@@ -1,0 +1,10 @@
+{
+  "retrain_tokens": [
+    "your_secret_token_here",
+    "ml_engineer_token_2024"
+  ],
+  "admin_tokens": [
+    "admin_super_secret_token"
+  ],
+  "token_expiry_hours": 24
+}
