@@ -1,49 +1,26 @@
 """
-Database configuration and connection setup for the Neurodevelopmental Disorders Risk Calculator.
-Updated to support both PostgreSQL (production) and SQLite (development).
+Database configuration and session management.
+Supports both PostgreSQL (production) and SQLite (development).
 """
 
 import os
-from sqlalchemy import create_engine, MetaData, event
+from typing import Generator
+from sqlalchemy import create_engine, event, MetaData
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool, NullPool
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from app.config import settings
+from loguru import logger
 
-# Database URL configuration
-# Prioritize PostgreSQL for production
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# If no DATABASE_URL is set, construct it from individual components
-if not DATABASE_URL:
-    # Try to construct PostgreSQL URL from components
-    if os.getenv("POSTGRES_HOST"):
-        DATABASE_URL = (
-            f"postgresql://{os.getenv('POSTGRES_USER', 'ndd_user')}:"
-            f"{os.getenv('POSTGRES_PASSWORD', 'password')}@"
-            f"{os.getenv('POSTGRES_HOST', 'localhost')}:"
-            f"{os.getenv('POSTGRES_PORT', '5432')}/"
-            f"{os.getenv('POSTGRES_DB', 'ndd_calculator')}"
-        )
-    else:
-        # Fall back to SQLite for development
-        DATABASE_URL = "sqlite:///./data/ndd_calculator.db"
-        print("⚠️  No PostgreSQL configuration found, using SQLite for development")
-
-# Create engine with appropriate configuration
-if DATABASE_URL.startswith("sqlite"):
-    # SQLite configuration
+# Determine engine configuration based on database type
+if settings.database_url.startswith("sqlite"):
+    # SQLite configuration for development
     engine = create_engine(
-        DATABASE_URL,
-        connect_args={
-            "check_same_thread": False,
-            "timeout": 20
-        },
+        settings.database_url,
+        connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        echo=os.getenv("SQL_ECHO", "false").lower() == "true"
+        echo=settings.debug
     )
     
     # Enable foreign keys for SQLite
@@ -53,18 +30,23 @@ if DATABASE_URL.startswith("sqlite"):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
     
-elif DATABASE_URL.startswith("postgresql"):
-    # PostgreSQL configuration
+    logger.info("Using SQLite database for development")
+    
+elif settings.database_url.startswith("postgresql"):
+    # PostgreSQL configuration for production
     engine = create_engine(
-        DATABASE_URL,
-        pool_pre_ping=True,  # Verify connections before using
-        pool_recycle=300,    # Recycle connections after 5 minutes
-        pool_size=10,        # Number of connections to maintain
-        max_overflow=20,     # Maximum overflow connections
-        echo=os.getenv("SQL_ECHO", "false").lower() == "true"
+        settings.database_url,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_size=10,
+        max_overflow=20,
+        echo=settings.debug
     )
+    
+    logger.info("Using PostgreSQL database")
+    
 else:
-    raise ValueError(f"Unsupported database URL: {DATABASE_URL}")
+    raise ValueError(f"Unsupported database URL: {settings.database_url}")
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -75,10 +57,14 @@ Base = declarative_base()
 # Metadata for migrations
 metadata = MetaData()
 
-def get_db():
+
+def get_db() -> Generator[Session, None, None]:
     """
     Dependency function to get database session.
-    Used with FastAPI's Depends() for dependency injection.
+    Ensures proper cleanup after request completion.
+    
+    Yields:
+        Session: SQLAlchemy database session
     """
     db = SessionLocal()
     try:
@@ -86,71 +72,73 @@ def get_db():
     finally:
         db.close()
 
-def create_tables():
+
+def init_db() -> None:
     """
-    Create all tables in the database.
-    This function should be called on application startup.
+    Initialize database with all tables.
+    Creates tables if they don't exist.
     """
     # Import all models to ensure they're registered
-    from app.models.evaluacion import Evaluacion
+    from app.models import assessment  # noqa
     
-    # Ensure data directory exists (for SQLite)
-    if DATABASE_URL.startswith("sqlite"):
+    # Create data directory for SQLite if needed
+    if settings.database_url.startswith("sqlite"):
         os.makedirs("data", exist_ok=True)
     
     # Create all tables
     Base.metadata.create_all(bind=engine)
-    print(f"✅ Database tables created successfully!")
-    print(f"📍 Using database: {engine.url.render_as_string(hide_password=True)}")
+    logger.info("Database tables created successfully")
 
-def get_db_info():
-    """
-    Get database connection information for debugging.
-    """
-    return {
-        "database_url": engine.url.render_as_string(hide_password=True),
-        "engine": str(engine.url.drivername),
-        "dialect": engine.dialect.name,
-        "pool_size": getattr(engine.pool, 'size', 'N/A'),
-        "is_sqlite": DATABASE_URL.startswith("sqlite"),
-        "is_postgresql": DATABASE_URL.startswith("postgresql")
-    }
 
-def test_connection():
+def check_db_connection() -> bool:
     """
     Test database connection.
-    Returns True if successful, raises exception otherwise.
+    
+    Returns:
+        bool: True if connection successful, False otherwise
     """
     try:
         with engine.connect() as conn:
-            # Simple query to test connection
-            result = conn.execute("SELECT 1")
-            result.fetchone()
-        print("✅ Database connection successful!")
+            conn.execute("SELECT 1")
+        logger.info("Database connection successful")
         return True
     except Exception as e:
-        print(f"❌ Database connection failed: {str(e)}")
-        raise
+        logger.error(f"Database connection failed: {str(e)}")
+        return False
 
-def init_database():
-    """
-    Initialize database with required extensions (PostgreSQL only).
-    Call this before create_tables() for PostgreSQL.
-    """
-    if DATABASE_URL.startswith("postgresql"):
-        try:
-            with engine.connect() as conn:
-                # Create UUID extension if needed
-                conn.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
-                conn.commit()
-            print("✅ PostgreSQL extensions initialized")
-        except Exception as e:
-            print(f"⚠️  Could not create extensions: {str(e)}")
 
-# Run basic connection test on import
-if __name__ == "__main__":
-    print("Testing database connection...")
-    test_connection()
-    print("\nDatabase info:")
-    for key, value in get_db_info().items():
-        print(f"  {key}: {value}")
+def get_db_stats() -> dict:
+    """
+    Get database statistics and information.
+    
+    Returns:
+        dict: Database statistics
+    """
+    from app.models.assessment import Assessment
+    
+    db = SessionLocal()
+    try:
+        stats = {
+            "engine": engine.url.drivername,
+            "database": engine.url.database,
+            "tables": list(Base.metadata.tables.keys()),
+            "assessment_count": db.query(Assessment).count(),
+            "connection_pool": {
+                "size": getattr(engine.pool, "size", "N/A"),
+                "checked_out": getattr(engine.pool, "checked_out", "N/A"),
+            }
+        }
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting database stats: {str(e)}")
+        return {"error": str(e)}
+    finally:
+        db.close()
+
+
+# Optional: Alembic integration for migrations
+def create_migration_engine():
+    """
+    Create engine specifically for Alembic migrations.
+    """
+    return engine
