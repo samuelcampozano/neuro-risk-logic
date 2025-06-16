@@ -3,9 +3,9 @@ Configuration management using Pydantic Settings.
 Handles environment variables and application configuration.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator
+from pydantic import Field, field_validator, computed_field
 import os
 from pathlib import Path
 
@@ -53,13 +53,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
-    # CORS
-    cors_origins: List[str] = Field(
+    # CORS - Changed to Union type to handle both string and list
+    cors_origins: Union[List[str], str] = Field(
         default=["http://localhost:3000", "http://localhost:8080"],
         env="CORS_ORIGINS"
     )
     
-    # Model Configuration
+    # Model Configuration - renamed to avoid conflict with pydantic's model_ namespace
     model_version: str = Field(default="v1.0.0", env="MODEL_VERSION")
     min_training_samples: int = Field(default=100, env="MIN_TRAINING_SAMPLES")
     retrain_threshold_accuracy: float = Field(default=0.75, env="RETRAIN_THRESHOLD_ACCURACY")
@@ -92,28 +92,43 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="ignore"
+        extra="ignore",
+        # This prevents the model_ namespace conflict
+        protected_namespaces=('settings_',)
     )
     
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins", mode="before")
+    @classmethod
     def assemble_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string."""
+        """Parse CORS origins from comma-separated string or return as list."""
+        if v is None or v == "":
+            return ["http://localhost:3000", "http://localhost:8080"]
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+            # Handle comma-separated string
+            if "," in v:
+                return [origin.strip() for origin in v.split(",") if origin.strip()]
+            # Handle single origin
+            return [v.strip()] if v.strip() else ["http://localhost:3000", "http://localhost:8080"]
+        if isinstance(v, list):
+            return v
+        return ["http://localhost:3000", "http://localhost:8080"]
     
-    @validator("database_url", pre=True)
-    def assemble_db_connection(cls, v, values):
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v, info):
         """Construct database URL from components if not directly provided."""
         if v and v != "postgresql://user:password@localhost:5432/neurorisk_db":
             return v
         
+        # Try to get values from info.data (field values)
+        data = info.data if info else {}
+        
         # Try to construct from components
-        user = values.get("postgres_user")
-        password = values.get("postgres_password")
-        host = values.get("postgres_host", "localhost")
-        port = values.get("postgres_port", 5432)
-        db = values.get("postgres_db", "neurorisk_db")
+        user = data.get("postgres_user")
+        password = data.get("postgres_password")
+        host = data.get("postgres_host", "localhost")
+        port = data.get("postgres_port", 5432)
+        db = data.get("postgres_db", "neurorisk_db")
         
         if user and password:
             return f"postgresql://{user}:{password}@{host}:{port}/{db}"
@@ -121,11 +136,13 @@ class Settings(BaseSettings):
         # Fallback to SQLite for development
         return f"sqlite:///{BASE_DIR}/data/neurorisk.db"
     
+    @computed_field
     @property
     def is_production(self) -> bool:
         """Check if running in production mode."""
         return self.environment.lower() == "production"
     
+    @computed_field
     @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
