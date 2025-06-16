@@ -1,0 +1,228 @@
+{
+  "features": [
+    {
+      "id": 1,
+      "name": "consanguinity",
+      "display_name": "Parental Consanguinity",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Are the subject's parents blood-related?",
+      "relevance": "Strong genetic risk factor for neurodevelopmental disorders",
+      "weight": 0.15,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 2,
+      "name": "family_neuro_history",
+      "display_name": "Family Neurological History",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Does the subject have a family history of neurological disorders?",
+      "relevance": "High hereditary correlation with neurodevelopmental conditions",
+      "weight": 0.12,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 3,
+      "name": "seizures_history",
+      "display_name": "Seizures/Convulsions History",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Has the subject ever had seizures or convulsions?",
+      "relevance": "Possible neurological abnormality indicator",
+      "weight": 0.10,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 4,
+      "name": "brain_injury_history",
+      "display_name": "Brain Injury History",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "History of traumatic brain injury (TBI) or head trauma?",
+      "relevance": "Known to increase risk of neurodevelopmental disorders",
+      "weight": 0.09,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 5,
+      "name": "psychiatric_diagnosis",
+      "display_name": "Psychiatric Diagnosis",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Diagnosed with any psychiatric disorder (depression, bipolar, etc.)?",
+      "relevance": "Directly linked to neurodevelopmental risk",
+      "weight": 0.11,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 6,
+      "name": "substance_use",
+      "display_name": "Psychoactive Substance Use",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Does the subject consume psychoactive substances regularly?",
+      "relevance": "Risk factor for mental/neurological health",
+      "weight": 0.08,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 7,
+      "name": "birth_complications",
+      "display_name": "Birth Complications",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Was the subject born with complications or low weight?",
+      "relevance": "Birth complications are correlated with neurological risks",
+      "weight": 0.09,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 8,
+      "name": "extreme_poverty",
+      "display_name": "Extreme Poverty",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Does the subject live in extreme poverty?",
+      "relevance": "Strong environmental risk factor",
+      "weight": 0.07,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 9,
+      "name": "education_access_issues",
+      "display_name": "Education Access Restrictions",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Has the subject ever had access restrictions to education?",
+      "relevance": "Low cognitive stimulation increases risk",
+      "weight": 0.06,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 10,
+      "name": "healthcare_access",
+      "display_name": "Mental Healthcare Access",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Does the subject have access to mental healthcare?",
+      "relevance": "Lack of care increases long-term undetected conditions",
+      "weight": 0.08,
+      "risk_direction": "negative"
+    },
+    {
+      "id": 11,
+      "name": "suicide_ideation",
+      "display_name": "Suicide Ideation/Attempts",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "History of suicide attempts or ideation?",
+      "relevance": "Severe psychiatric vulnerability indicator",
+      "weight": 0.13,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 12,
+      "name": "psychotropic_medication",
+      "display_name": "Psychotropic Medication",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Is the subject on psychotropic or neurological medication?",
+      "relevance": "Indicates treatment for pre-existing conditions",
+      "weight": 0.07,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 13,
+      "name": "disability_diagnosis",
+      "display_name": "Disability Diagnosis",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Has the subject ever been diagnosed with a disability?",
+      "relevance": "Related to neurodivergence",
+      "weight": 0.09,
+      "risk_direction": "positive"
+    },
+    {
+      "id": 14,
+      "name": "social_support_level",
+      "display_name": "Social Support Level",
+      "type": "categorical",
+      "category": "sociodemographic",
+      "description": "Level of social support (isolated vs. supported)",
+      "relevance": "Social context moderates risk",
+      "weight": 0.08,
+      "risk_direction": "varies",
+      "categories": ["isolated", "moderate", "supported"],
+      "encoding": {
+        "isolated": 0,
+        "moderate": 1,
+        "supported": 2
+      }
+    },
+    {
+      "id": 15,
+      "name": "age",
+      "display_name": "Age",
+      "type": "numeric",
+      "category": "demographic",
+      "description": "Age of the subject",
+      "relevance": "Needed for normalization/context",
+      "weight": 0.05,
+      "risk_direction": "varies",
+      "range": [0, 120]
+    },
+    {
+      "id": 16,
+      "name": "gender",
+      "display_name": "Gender",
+      "type": "categorical",
+      "category": "demographic",
+      "description": "Gender of the subject",
+      "relevance": "Some disorders have higher incidence by sex",
+      "weight": 0.04,
+      "risk_direction": "varies",
+      "categories": ["M", "F", "Other"],
+      "encoding": {
+        "M": 0,
+        "F": 1,
+        "Other": 2
+      }
+    },
+    {
+      "id": 17,
+      "name": "breastfed_infancy",
+      "display_name": "Breastfed During Infancy",
+      "type": "binary",
+      "category": "sociodemographic",
+      "description": "Was the subject breastfed during infancy?",
+      "relevance": "Proxy for early nutrition and stimulation",
+      "weight": 0.05,
+      "risk_direction": "negative"
+    },
+    {
+      "id": 18,
+      "name": "violence_exposure",
+      "display_name": "Violence/Trauma Exposure",
+      "type": "binary",
+      "category": "clinical_genetic",
+      "description": "Exposure to violence or trauma (childhood or adulthood)?",
+      "relevance": "Long-term mental health impact",
+      "weight": 0.10,
+      "risk_direction": "positive"
+    }
+  ],
+  "risk_thresholds": {
+    "low": [0.0, 0.3],
+    "moderate": [0.3, 0.7],
+    "high": [0.7, 1.0]
+  },
+  "model_config": {
+    "type": "RandomForestClassifier",
+    "version": "1.0.0",
+    "n_estimators": 100,
+    "max_depth": 10,
+    "min_samples_split": 5,
+    "class_weight": "balanced"
+  }
+}
