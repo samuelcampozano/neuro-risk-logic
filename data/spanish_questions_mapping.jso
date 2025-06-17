@@ -1,0 +1,157 @@
+{
+  "title": "Evaluación de Riesgo de Trastornos del Neurodesarrollo",
+  "description": "Por favor responda todas las preguntas con sinceridad. Esta información es confidencial y será utilizada únicamente para fines de evaluación clínica.",
+  "questions": {
+    "demographics": {
+      "title": "Información Demográfica",
+      "fields": {
+        "age": {
+          "label": "Edad del sujeto",
+          "type": "number",
+          "placeholder": "Años"
+        },
+        "gender": {
+          "label": "Género",
+          "type": "select",
+          "options": {
+            "M": "Masculino",
+            "F": "Femenino",
+            "Other": "Otro"
+          }
+        }
+      }
+    },
+    "clinical_genetic": {
+      "title": "Factores Clínicos y Genéticos",
+      "fields": {
+        "consanguinity": {
+          "label": "¿Los padres del sujeto son parientes consanguíneos?",
+          "type": "boolean",
+          "help": "Por ejemplo: primos, tío-sobrina, etc."
+        },
+        "family_neuro_history": {
+          "label": "¿Existe historial familiar de trastornos neurológicos?",
+          "type": "boolean",
+          "help": "Epilepsia, autismo, discapacidad intelectual, etc."
+        },
+        "seizures_history": {
+          "label": "¿El sujeto ha tenido convulsiones o crisis epilépticas?",
+          "type": "boolean"
+        },
+        "brain_injury_history": {
+          "label": "¿Historial de traumatismo craneoencefálico o lesión cerebral?",
+          "type": "boolean"
+        },
+        "psychiatric_diagnosis": {
+          "label": "¿Diagnosticado con algún trastorno psiquiátrico?",
+          "type": "boolean",
+          "help": "Depresión, trastorno bipolar, esquizofrenia, etc."
+        },
+        "substance_use": {
+          "label": "¿Consume sustancias psicoactivas regularmente?",
+          "type": "boolean",
+          "help": "Alcohol, drogas, medicamentos sin prescripción"
+        },
+        "suicide_ideation": {
+          "label": "¿Historial de intentos de suicidio o ideación suicida?",
+          "type": "boolean"
+        },
+        "psychotropic_medication": {
+          "label": "¿Está tomando medicación psicotrópica o neurológica?",
+          "type": "boolean"
+        },
+        "violence_exposure": {
+          "label": "¿Exposición a violencia o trauma?",
+          "type": "boolean",
+          "help": "En la infancia o edad adulta"
+        }
+      }
+    },
+    "sociodemographic": {
+      "title": "Factores Sociodemográficos",
+      "fields": {
+        "birth_complications": {
+          "label": "¿Nació con complicaciones o bajo peso?",
+          "type": "boolean"
+        },
+        "extreme_poverty": {
+          "label": "¿Vive en situación de pobreza extrema?",
+          "type": "boolean"
+        },
+        "education_access_issues": {
+          "label": "¿Ha tenido restricciones de acceso a la educación?",
+          "type": "boolean"
+        },
+        "healthcare_access": {
+          "label": "¿Tiene acceso a servicios de salud mental?",
+          "type": "boolean"
+        },
+        "disability_diagnosis": {
+          "label": "¿Ha sido diagnosticado con alguna discapacidad?",
+          "type": "boolean"
+        },
+        "breastfed_infancy": {
+          "label": "¿Fue amamantado durante la infancia?",
+          "type": "boolean"
+        },
+        "social_support_level": {
+          "label": "Nivel de apoyo social",
+          "type": "select",
+          "options": {
+            "isolated": "Aislado",
+            "moderate": "Moderado",
+            "supported": "Con apoyo"
+          }
+        }
+      }
+    },
+    "consent": {
+      "title": "Consentimiento",
+      "fields": {
+        "consent_given": {
+          "label": "Doy mi consentimiento para el uso de estos datos con fines de evaluación y mejora del sistema",
+          "type": "boolean",
+          "required": true
+        },
+        "clinician_id": {
+          "label": "ID del Clínico (opcional)",
+          "type": "text",
+          "placeholder": "Ej: DR12345"
+        },
+        "notes": {
+          "label": "Notas adicionales (opcional)",
+          "type": "textarea",
+          "placeholder": "Observaciones clínicas relevantes..."
+        }
+      }
+    }
+  },
+  "buttons": {
+    "submit": "Enviar Evaluación",
+    "clear": "Limpiar Formulario",
+    "calculate": "Calcular Riesgo"
+  },
+  "messages": {
+    "success": "Evaluación enviada exitosamente",
+    "error": "Error al procesar la evaluación",
+    "consent_required": "El consentimiento es obligatorio",
+    "loading": "Procesando...",
+    "validation_error": "Por favor complete todos los campos requeridos"
+  },
+  "results": {
+    "title": "Resultados de la Evaluación",
+    "risk_score": "Puntuación de Riesgo",
+    "risk_level": "Nivel de Riesgo",
+    "confidence": "Confianza del Modelo",
+    "risk_levels": {
+      "low": "Bajo",
+      "moderate": "Moderado",
+      "high": "Alto"
+    },
+    "sections": {
+      "risk_factors": "Factores de Riesgo Identificados",
+      "protective_factors": "Factores Protectores",
+      "recommendations": "Recomendaciones Clínicas"
+    }
+  }
+}

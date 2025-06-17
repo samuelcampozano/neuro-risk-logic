@@ -2,7 +2,7 @@
 Pydantic schemas for Assessment model CRUD operations.
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 

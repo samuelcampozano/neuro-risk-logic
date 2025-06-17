@@ -5,7 +5,7 @@ Handles environment variables and application configuration.
 
 from typing import List, Optional, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, field_validator, computed_field
+from pydantic import Field, field_validator
 import os
 from pathlib import Path
 
@@ -53,14 +53,14 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
-    # CORS - Changed to Union type to handle both string and list
+    # CORS - Fixed to handle both string and list inputs
     cors_origins: Union[List[str], str] = Field(
         default=["http://localhost:3000", "http://localhost:8080"],
         env="CORS_ORIGINS"
     )
     
     # Model Configuration - renamed to avoid conflict with pydantic's model_ namespace
-    model_version: str = Field(default="v1.0.0", env="MODEL_VERSION")
+    ml_model_version: str = Field(default="v1.0.0", env="MODEL_VERSION")
     min_training_samples: int = Field(default=100, env="MIN_TRAINING_SAMPLES")
     retrain_threshold_accuracy: float = Field(default=0.75, env="RETRAIN_THRESHOLD_ACCURACY")
     
@@ -100,18 +100,18 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string or return as list."""
-        if v is None or v == "":
-            return ["http://localhost:3000", "http://localhost:8080"]
+        """Parse CORS origins from comma-separated string or return as-is if already a list."""
         if isinstance(v, str):
+            # Handle empty string
+            if not v.strip():
+                return ["http://localhost:3000", "http://localhost:8080"]
             # Handle comma-separated string
-            if "," in v:
-                return [origin.strip() for origin in v.split(",") if origin.strip()]
-            # Handle single origin
-            return [v.strip()] if v.strip() else ["http://localhost:3000", "http://localhost:8080"]
-        if isinstance(v, list):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        elif isinstance(v, list):
             return v
-        return ["http://localhost:3000", "http://localhost:8080"]
+        else:
+            # Fallback to default
+            return ["http://localhost:3000", "http://localhost:8080"]
     
     @field_validator("database_url", mode="before")
     @classmethod
@@ -120,15 +120,15 @@ class Settings(BaseSettings):
         if v and v != "postgresql://user:password@localhost:5432/neurorisk_db":
             return v
         
-        # Try to get values from info.data (field values)
-        data = info.data if info else {}
+        # Try to get values from the data being validated
+        values = info.data if info.data else {}
         
         # Try to construct from components
-        user = data.get("postgres_user")
-        password = data.get("postgres_password")
-        host = data.get("postgres_host", "localhost")
-        port = data.get("postgres_port", 5432)
-        db = data.get("postgres_db", "neurorisk_db")
+        user = values.get("postgres_user")
+        password = values.get("postgres_password")
+        host = values.get("postgres_host", "localhost")
+        port = values.get("postgres_port", 5432)
+        db = values.get("postgres_db", "neurorisk_db")
         
         if user and password:
             return f"postgresql://{user}:{password}@{host}:{port}/{db}"
@@ -136,13 +136,11 @@ class Settings(BaseSettings):
         # Fallback to SQLite for development
         return f"sqlite:///{BASE_DIR}/data/neurorisk.db"
     
-    @computed_field
     @property
     def is_production(self) -> bool:
         """Check if running in production mode."""
         return self.environment.lower() == "production"
     
-    @computed_field
     @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
@@ -157,6 +155,11 @@ class Settings(BaseSettings):
     def get_feature_definitions_path(self) -> Path:
         """Get full path to feature definitions file."""
         return BASE_DIR / self.feature_definitions_path
+    
+    @property
+    def model_version(self) -> str:
+        """Get model version for backward compatibility."""
+        return self.ml_model_version
 
 
 # Create global settings instance
