@@ -5,7 +5,7 @@ Supports both PostgreSQL (production) and SQLite (development).
 
 import os
 from typing import Generator
-from sqlalchemy import create_engine, event, MetaData
+from sqlalchemy import create_engine, event, MetaData, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool, NullPool
@@ -99,7 +99,8 @@ def check_db_connection() -> bool:
     """
     try:
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            # Use text() for raw SQL
+            conn.execute(text("SELECT 1"))
         logger.info("Database connection successful")
         return True
     except Exception as e:

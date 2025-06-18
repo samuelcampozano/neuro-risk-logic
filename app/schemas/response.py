@@ -145,8 +145,8 @@ class TokenResponse(BaseModel):
 class ModelInfoResponse(BaseModel):
     """Response model for model information."""
     
-    model_type: str = Field(..., description="Type of ML model")
-    model_version: str = Field(..., description="Current model version")
+    ml_model_type: str = Field(..., description="Type of ML model", alias="model_type")
+    ml_model_version: str = Field(..., description="Current model version", alias="model_version")
     features_count: int = Field(..., description="Number of input features")
     training_date: datetime = Field(..., description="When model was trained")
     performance_metrics: Dict[str, float] = Field(..., description="Model performance metrics")
@@ -187,7 +187,7 @@ class StatsResponse(BaseModel):
     average_age: float = Field(..., description="Average subject age")
     most_common_risk_factors: List[Dict[str, Any]] = Field(..., description="Top risk factors")
     assessments_last_30_days: int = Field(..., description="Recent assessment count")
-    model_performance: Dict[str, float] = Field(..., description="Current model metrics")
+    ml_performance: Dict[str, float] = Field(..., description="Current model metrics", alias="model_performance")
     
     model_config = ConfigDict(
         json_schema_extra={
