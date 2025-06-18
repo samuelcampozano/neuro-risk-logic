@@ -1,0 +1,107 @@
+{
+  "version": "v20250617_221637",
+  "training_date": "2025-06-17T22:16:38.441307",
+  "model_type": "RandomForestClassifier",
+  "feature_names": [
+    "consanguinity",
+    "family_neuro_history",
+    "seizures_history",
+    "brain_injury_history",
+    "psychiatric_diagnosis",
+    "substance_use",
+    "birth_complications",
+    "extreme_poverty",
+    "education_access_issues",
+    "healthcare_access",
+    "suicide_ideation",
+    "psychotropic_medication",
+    "disability_diagnosis",
+    "breastfed_infancy",
+    "violence_exposure",
+    "social_support_encoded",
+    "age_normalized",
+    "gender_encoded"
+  ],
+  "feature_count": 18,
+  "metrics": {
+    "accuracy": 0.97,
+    "precision": 0.9473684210526315,
+    "recall": 0.782608695652174,
+    "f1_score": 0.8571428571428571,
+    "auc_roc": 0.9965610415131417,
+    "cv_auc_mean": 0.9827220758919575,
+    "cv_auc_std": 0.007847044066209608,
+    "top_features": [
+      {
+        "feature": "psychiatric_diagnosis",
+        "importance": 0.1779161056816419
+      },
+      {
+        "feature": "violence_exposure",
+        "importance": 0.11324275007010738
+      },
+      {
+        "feature": "healthcare_access",
+        "importance": 0.09017911289429675
+      },
+      {
+        "feature": "suicide_ideation",
+        "importance": 0.08075456517417548
+      },
+      {
+        "feature": "family_neuro_history",
+        "importance": 0.07318100008397474
+      },
+      {
+        "feature": "psychotropic_medication",
+        "importance": 0.054500850048289556
+      },
+      {
+        "feature": "breastfed_infancy",
+        "importance": 0.053871574379713516
+      },
+      {
+        "feature": "age_normalized",
+        "importance": 0.042807945883066086
+      },
+      {
+        "feature": "education_access_issues",
+        "importance": 0.0390452469667956
+      },
+      {
+        "feature": "brain_injury_history",
+        "importance": 0.03904262071693565
+      }
+    ],
+    "confusion_matrix": [
+      [
+        176,
+        1
+      ],
+      [
+        5,
+        18
+      ]
+    ]
+  },
+  "model_config": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "class_weight": "balanced",
+    "criterion": "gini",
+    "max_depth": 10,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 2,
+    "min_samples_split": 5,
+    "min_weight_fraction_leaf": 0.0,
+    "n_estimators": 100,
+    "n_jobs": -1,
+    "oob_score": false,
+    "random_state": 42,
+    "verbose": 0,
+    "warm_start": false
+  }
+}
