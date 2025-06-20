@@ -18,6 +18,7 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import numpy as np
 
 from app.config import settings
 from app.database import SessionLocal
