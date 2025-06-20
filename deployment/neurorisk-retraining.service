@@ -1,0 +1,28 @@
+[Unit]
+Description=NeuroRisk ML Model Retraining Service
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=neurorisk
+Group=neurorisk
+WorkingDirectory=/opt/neurorisk
+Environment="PATH=/opt/neurorisk/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/opt/neurorisk"
+Environment="ENV=production"
+ExecStart=/opt/neurorisk/venv/bin/python scripts/automated_retraining.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/neurorisk/retraining.log
+StandardError=append:/var/log/neurorisk/retraining-error.log
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/neurorisk/data /var/log/neurorisk
+
+[Install]
+WantedBy=multi-user.target
