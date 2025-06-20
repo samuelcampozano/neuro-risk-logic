@@ -59,7 +59,8 @@ def create_access_token(
             minutes=settings.access_token_expire_minutes
         )
     
-    to_encode.update({"exp": expire})
+    # Convert to timestamp (important: use timestamp() not just the datetime)
+    to_encode.update({"exp": expire.timestamp()})
     
     try:
         encoded_jwt = jwt.encode(
@@ -105,7 +106,7 @@ def verify_token(
         
         username: str = payload.get("sub")
         scopes: list = payload.get("scopes", [])
-        exp: int = payload.get("exp")
+        exp: float = payload.get("exp")
         
         if username is None:
             raise credentials_exception
