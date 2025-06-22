@@ -24,6 +24,10 @@ NeuroRiskLogic is an AI-powered risk assessment system for neurodevelopmental di
 - [Quick Start](#quick-start)
 - [API Documentation](#api-documentation)
 - [Features](#features)
+- [Continuous Learning & Model Retraining](#-continuous-learning--model-retraining)
+- [Model Monitoring](#-model-monitoring)
+- [Development Tools](#️-development-tools)
+- [New API Endpoints](#-new-api-endpoints)
 - [Development](#development)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
@@ -220,6 +224,118 @@ The system analyzes 18 evidence-based features:
 | **Sociodemographic** | Birth complications, Extreme poverty, Education access, Healthcare access, Disability diagnosis, Social support level, Breastfeeding history, Violence exposure |
 | **Demographics** | Age, Gender |
 
+## 🔄 Continuous Learning & Model Retraining
+
+### Automated Retraining
+
+The system includes an automated retraining service that continuously improves model performance:
+
+```bash
+# Start automated retraining service
+python scripts/automated_retraining.py
+
+# Or run once
+python scripts/automated_retraining.py --once
+```
+
+### Manual Retraining via API
+
+```bash
+# Trigger retraining (requires admin token)
+curl -X POST http://localhost:8000/api/v1/retrain/start \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"force": false, "min_samples": 50}'
+
+# Check retraining status
+curl -X GET http://localhost:8000/api/v1/retrain/status/<task-id> \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+### Upload Clinical Data
+
+```bash
+# Upload new clinical data for retraining
+curl -X POST http://localhost:8000/api/v1/retrain/upload-data \
+  -H "Authorization: Bearer <admin-token>" \
+  -F "file=@clinical_data.csv"
+```
+
+### Model Evaluation & Comparison
+
+```bash
+# Evaluate current model
+python scripts/evaluate_model.py --plots
+
+# Compare model versions
+curl -X GET http://localhost:8000/api/v1/retrain/metrics/comparison?versions=5 \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+## 📊 Model Monitoring
+
+### Generate Monitoring Dashboard
+
+```bash
+# Generate interactive HTML dashboard
+python scripts/generate_monitoring_report.py --open
+
+# Dashboard includes:
+# - Model performance trends
+# - Assessment volume statistics
+# - Feature importance analysis
+# - Data distribution plots
+```
+
+### Real-time Monitoring Endpoints
+
+* `GET /api/v1/stats` - System statistics
+* `GET /api/v1/stats/trends` - Assessment trends
+* `GET /api/v1/stats/risk-factors` - Risk factor analysis
+
+## 🛠️ Development Tools
+
+### Simulation & Testing
+
+```bash
+# Simulate assessments for testing
+python scripts/dev_tools.py simulate -n 100 -d 30
+
+# Run system health check
+python scripts/dev_tools.py health
+
+# Generate test report
+python scripts/dev_tools.py report
+
+# Export data
+python scripts/dev_tools.py export -o data_export.csv
+```
+
+### Using Make Commands
+
+```bash
+make train          # Train initial model
+make retrain        # Run model retraining
+make evaluate       # Evaluate current model
+make monitor        # Generate monitoring report
+make simulate       # Simulate test data
+```
+
+## 🚀 New API Endpoints
+
+### Retraining Endpoints (Admin Only)
+
+* `POST /api/v1/retrain/start` - Start retraining task
+* `GET /api/v1/retrain/status/{task_id}` - Check task status
+* `GET /api/v1/retrain/history` - View retraining history
+* `POST /api/v1/retrain/upload-data` - Upload clinical data
+* `GET /api/v1/retrain/metrics/comparison` - Compare model versions
+
+### Enhanced Statistics Endpoints
+
+* `GET /api/v1/stats/trends` - Assessment trends over time
+* `GET /api/v1/stats/risk-factors` - Risk factor analysis
+
 ## Development
 
 ### Project Structure
@@ -401,7 +517,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Author**: Samuel Campozano Lopez
 - **Email**: samuelco860@gmail.com
 - **LinkedIn**: Samuel Campozano Lopez
-
----
-
-  Made with ❤️ for improving neurodevelopmental healthcare accessibility
