@@ -3,9 +3,9 @@ Configuration management using Pydantic Settings.
 Handles environment variables and application configuration.
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, field_validator
+from pydantic import Field, validator
 import os
 from pathlib import Path
 
@@ -53,8 +53,8 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
-    # CORS - Fixed to handle both string and list inputs
-    cors_origins: Union[List[str], str] = Field(
+    # CORS
+    cors_origins: List[str] = Field(
         default=["http://localhost:3000", "http://localhost:8080"],
         env="CORS_ORIGINS"
     )
@@ -76,9 +76,10 @@ class Settings(BaseSettings):
     synthetic_samples: int = Field(default=1000, env="SYNTHETIC_SAMPLES")
     random_seed: int = Field(default=42, env="RANDOM_SEED")
     
-    # Monitoring
-    enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
-    metrics_endpoint: str = Field(default="/metrics", env="METRICS_ENDPOINT")
+    # Incremental Learning
+    enable_incremental_learning: bool = Field(default=True, env="ENABLE_INCREMENTAL_LEARNING")
+    incremental_retrain_interval: int = Field(default=7, env="INCREMENTAL_RETRAIN_INTERVAL")
+    incremental_confidence_threshold: float = Field(default=0.85, env="INCREMENTAL_CONFIDENCE_THRESHOLD")
     
     # External Services (Optional)
     sentry_dsn: Optional[str] = Field(default=None, env="SENTRY_DSN")
@@ -97,31 +98,18 @@ class Settings(BaseSettings):
         protected_namespaces=('settings_',)
     )
     
-    @field_validator("cors_origins", mode="before")
-    @classmethod
+    @validator("cors_origins", pre=True)
     def assemble_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string or return as-is if already a list."""
+        """Parse CORS origins from comma-separated string."""
         if isinstance(v, str):
-            # Handle empty string
-            if not v.strip():
-                return ["http://localhost:3000", "http://localhost:8080"]
-            # Handle comma-separated string
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        elif isinstance(v, list):
-            return v
-        else:
-            # Fallback to default
-            return ["http://localhost:3000", "http://localhost:8080"]
+            return [origin.strip() for origin in v.split(",")]
+        return v
     
-    @field_validator("database_url", mode="before")
-    @classmethod
-    def assemble_db_connection(cls, v, info):
+    @validator("database_url", pre=True)
+    def assemble_db_connection(cls, v, values):
         """Construct database URL from components if not directly provided."""
         if v and v != "postgresql://user:password@localhost:5432/neurorisk_db":
             return v
-        
-        # Try to get values from the data being validated
-        values = info.data if info.data else {}
         
         # Try to construct from components
         user = values.get("postgres_user")

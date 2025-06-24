@@ -198,3 +198,6 @@ secrets/
 *.pem
 *.key
 *.crt
+
+# Real clinical data
+data/real_clinical_data.xlsx
