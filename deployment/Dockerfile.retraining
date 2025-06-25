@@ -1,0 +1,48 @@
+# Dockerfile for automated retraining service
+FROM python:3.9-slim
+
+# Install system dependencies including cron
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p /app/data/models /app/data/synthetic /app/logs
+
+# Copy crontab file
+COPY deployment/crontab /etc/cron.d/retraining-cron
+
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/retraining-cron
+
+# Apply cron job
+RUN crontab /etc/cron.d/retraining-cron
+
+# Create the log file to be able to run tail
+RUN touch /app/logs/cron_retraining.log
+
+# Create a script to run both cron and the main process
+RUN echo '#!/bin/bash\n\
+# Start cron\n\
+service cron start\n\
+# Run the retraining service\n\
+python -m scripts.automated_retraining\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
+# Run the command on container startup
+CMD ["/app/start.sh"]
