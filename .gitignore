@@ -155,6 +155,12 @@ logs/
 .env.local
 .env.development
 .env.production
+deployment/.env
+!.env.template
+!.env.example
+deployment/.env
+deployment/.env.*
+!deployment/.env.template
 
 # ML specific
 mlruns/
