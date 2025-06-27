@@ -3,9 +3,9 @@ Configuration management using Pydantic Settings.
 Handles environment variables and application configuration.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 import os
 from pathlib import Path
 
@@ -30,16 +30,16 @@ class Settings(BaseSettings):
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8000, env="PORT")
     
-    # Database
+    # Database Configuration - PostgreSQL by default
     database_url: str = Field(
-        default="postgresql://user:password@localhost:5432/neurorisk_db",
+        default="postgresql://postgres:postgres@localhost:5432/neurorisk_db",
         env="DATABASE_URL"
     )
-    postgres_user: Optional[str] = Field(default=None, env="POSTGRES_USER")
-    postgres_password: Optional[str] = Field(default=None, env="POSTGRES_PASSWORD")
-    postgres_db: Optional[str] = Field(default=None, env="POSTGRES_DB")
-    postgres_host: Optional[str] = Field(default=None, env="POSTGRES_HOST")
-    postgres_port: Optional[int] = Field(default=None, env="POSTGRES_PORT")
+    postgres_user: Optional[str] = Field(default="postgres", env="POSTGRES_USER")
+    postgres_password: Optional[str] = Field(default="postgres", env="POSTGRES_PASSWORD")
+    postgres_db: Optional[str] = Field(default="neurorisk_db", env="POSTGRES_DB")
+    postgres_host: Optional[str] = Field(default="localhost", env="POSTGRES_HOST")
+    postgres_port: Optional[int] = Field(default=5432, env="POSTGRES_PORT")
     
     # Security
     secret_key: str = Field(
@@ -53,13 +53,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
-    # CORS
-    cors_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8080"],
+    # CORS - Changed to Union type to handle both string and list
+    cors_origins: Union[str, List[str]] = Field(
+        default="http://localhost:3000,http://localhost:8080",
         env="CORS_ORIGINS"
     )
     
-    # Model Configuration - renamed to avoid conflict with pydantic's model_ namespace
+    # Model Configuration
     ml_model_version: str = Field(default="v1.0.0", env="MODEL_VERSION")
     min_training_samples: int = Field(default=100, env="MIN_TRAINING_SAMPLES")
     retrain_threshold_accuracy: float = Field(default=0.75, env="RETRAIN_THRESHOLD_ACCURACY")
@@ -81,6 +81,10 @@ class Settings(BaseSettings):
     incremental_retrain_interval: int = Field(default=7, env="INCREMENTAL_RETRAIN_INTERVAL")
     incremental_confidence_threshold: float = Field(default=0.85, env="INCREMENTAL_CONFIDENCE_THRESHOLD")
     
+    # Monitoring
+    enable_metrics: bool = Field(default=False, env="ENABLE_METRICS")
+    metrics_endpoint: str = Field(default="/metrics", env="METRICS_ENDPOINT")
+    
     # External Services (Optional)
     sentry_dsn: Optional[str] = Field(default=None, env="SENTRY_DSN")
     slack_webhook_url: Optional[str] = Field(default=None, env="SLACK_WEBHOOK_URL")
@@ -88,6 +92,18 @@ class Settings(BaseSettings):
     # ML Tracking (Optional)
     mlflow_tracking_uri: Optional[str] = Field(default=None, env="MLFLOW_TRACKING_URI")
     wandb_api_key: Optional[str] = Field(default=None, env="WANDB_API_KEY")
+    
+    # Cloud Storage (Optional)
+    aws_access_key_id: Optional[str] = Field(default=None, env="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: Optional[str] = Field(default=None, env="AWS_SECRET_ACCESS_KEY")
+    aws_bucket_name: Optional[str] = Field(default=None, env="AWS_BUCKET_NAME")
+    
+    # Email Notifications (Optional)
+    smtp_host: Optional[str] = Field(default=None, env="SMTP_HOST")
+    smtp_port: int = Field(default=587, env="SMTP_PORT")
+    smtp_user: Optional[str] = Field(default=None, env="SMTP_USER")
+    smtp_password: Optional[str] = Field(default=None, env="SMTP_PASSWORD")
+    notification_email: Optional[str] = Field(default=None, env="NOTIFICATION_EMAIL")
     
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -98,31 +114,42 @@ class Settings(BaseSettings):
         protected_namespaces=('settings_',)
     )
     
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins", mode="before")
+    @classmethod
     def assemble_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string."""
+        """Parse CORS origins from comma-separated string or return list."""
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+            # Handle empty string
+            if not v.strip():
+                return ["http://localhost:3000", "http://localhost:8080"]
+            # Handle comma-separated string
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        elif isinstance(v, list):
+            return v
+        else:
+            # Default fallback
+            return ["http://localhost:3000", "http://localhost:8080"]
     
-    @validator("database_url", pre=True)
-    def assemble_db_connection(cls, v, values):
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v, info):
         """Construct database URL from components if not directly provided."""
-        if v and v != "postgresql://user:password@localhost:5432/neurorisk_db":
+        # If DATABASE_URL is explicitly set and valid, use it
+        if v and not v.startswith("postgresql://user:password"):
             return v
         
+        # Get values from validation context
+        values = info.data
+        
         # Try to construct from components
-        user = values.get("postgres_user")
-        password = values.get("postgres_password")
+        user = values.get("postgres_user", "postgres")
+        password = values.get("postgres_password", "postgres")
         host = values.get("postgres_host", "localhost")
         port = values.get("postgres_port", 5432)
         db = values.get("postgres_db", "neurorisk_db")
         
-        if user and password:
-            return f"postgresql://{user}:{password}@{host}:{port}/{db}"
-        
-        # Fallback to SQLite for development
-        return f"sqlite:///{BASE_DIR}/data/neurorisk.db"
+        # Always construct PostgreSQL URL for production readiness
+        return f"postgresql://{user}:{password}@{host}:{port}/{db}"
     
     @property
     def is_production(self) -> bool:
@@ -148,6 +175,12 @@ class Settings(BaseSettings):
     def model_version(self) -> str:
         """Get model version for backward compatibility."""
         return self.ml_model_version
+    
+    def get_cors_origins_list(self) -> List[str]:
+        """Get CORS origins as a list."""
+        if isinstance(self.cors_origins, str):
+            return self.assemble_cors_origins(self.cors_origins)
+        return self.cors_origins
 
 
 # Create global settings instance
@@ -156,3 +189,5 @@ settings = Settings()
 # Create necessary directories
 settings.models_dir.mkdir(parents=True, exist_ok=True)
 settings.synthetic_data_dir.mkdir(parents=True, exist_ok=True)
+(BASE_DIR / "data").mkdir(exist_ok=True)
+(BASE_DIR / "logs").mkdir(exist_ok=True)
