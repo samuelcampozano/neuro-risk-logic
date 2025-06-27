@@ -34,16 +34,36 @@ if settings.database_url.startswith("sqlite"):
     
 elif settings.database_url.startswith("postgresql"):
     # PostgreSQL configuration for production
-    engine = create_engine(
-        settings.database_url,
-        pool_pre_ping=True,
-        pool_recycle=300,
-        pool_size=10,
-        max_overflow=20,
-        echo=settings.debug
-    )
+    # For Docker environments, we might need to handle connection retries
+    import time
+    from sqlalchemy.exc import OperationalError
     
-    logger.info("Using PostgreSQL database")
+    max_retries = 5
+    retry_interval = 5
+    
+    for attempt in range(max_retries):
+        try:
+            engine = create_engine(
+                settings.database_url,
+                pool_pre_ping=True,
+                pool_recycle=300,
+                pool_size=10,
+                max_overflow=20,
+                echo=settings.debug
+            )
+            # Test connection
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logger.info("Successfully connected to PostgreSQL database")
+            break
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Failed to connect to PostgreSQL (attempt {attempt + 1}/{max_retries}): {str(e)}")
+                logger.info(f"Retrying in {retry_interval} seconds...")
+                time.sleep(retry_interval)
+            else:
+                logger.error(f"Failed to connect to PostgreSQL after {max_retries} attempts")
+                raise
     
 else:
     raise ValueError(f"Unsupported database URL: {settings.database_url}")
@@ -101,10 +121,10 @@ def check_db_connection() -> bool:
         with engine.connect() as conn:
             # Use text() for raw SQL
             conn.execute(text("SELECT 1"))
-        logger.info("Database connection successful")
+        logger.info("Database connection check successful")
         return True
     except Exception as e:
-        logger.error(f"Database connection failed: {str(e)}")
+        logger.error(f"Database connection check failed: {str(e)}")
         return False
 
 
