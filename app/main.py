@@ -20,6 +20,7 @@ from app.routes import (
     submit_router,
     stats_router,
     auth_router,
+    train_router,
     retrain_router
 )
 from app.schemas.response import ErrorResponse, HealthCheckResponse
@@ -157,6 +158,7 @@ app.include_router(predict_router)
 app.include_router(submit_router)
 app.include_router(stats_router)
 app.include_router(auth_router)
+app.include_router(train_router)
 app.include_router(retrain_router)
 
 # Root endpoint
