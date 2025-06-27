@@ -1,12 +1,12 @@
-# Byte-compiled / optimized / DLL files
+# ---------------------------------
+# Python
+# ---------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
-# Distribution / packaging
+# Bytecode & packaging
 .Python
 build/
 develop-eggs/
@@ -20,22 +20,53 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+*.tar.gz
+*.zip
 
-# PyInstaller
-*.manifest
-*.spec
+# C Extensions
+*.so
 
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# ---------------------------------
+# Virtual Environments
+# ---------------------------------
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# pipenv
+Pipfile.lock
+
+# pyenv
+.python-version
+
+# ---------------------------------
+# Environment Variables
+# ---------------------------------
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+deployment/.env
+deployment/.env.*
+!.env.example
+!.env.template
+!deployment/.env.template
+
+# ---------------------------------
+# Unit Test / Coverage
+# ---------------------------------
 htmlcov/
 .tox/
 .nox/
@@ -46,164 +77,155 @@ nosetests.xml
 coverage.xml
 *.cover
 *.py,cover
-.hypothesis/
 .pytest_cache/
+.hypothesis/
+test_output/
+test_results/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# IDE specific files
+# ---------------------------------
+# IDE & Editor
+# ---------------------------------
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
 
-# OS specific files
+# ---------------------------------
+# Jupyter & IPython
+# ---------------------------------
+.ipynb_checkpoints/
+*.ipynb
+profile_default/
+ipython_config.py
+
+# ---------------------------------
+# Documentation
+# ---------------------------------
+docs/_build/
+docs/.doctrees/
+site/
+
+# ---------------------------------
+# Django
+# ---------------------------------
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# ---------------------------------
+# Flask
+# ---------------------------------
+instance/
+.webassets-cache
+
+# ---------------------------------
+# Scrapy
+# ---------------------------------
+.scrapy
+
+# ---------------------------------
+# PyBuilder
+# ---------------------------------
+target/
+
+# ---------------------------------
+# Sphinx
+# ---------------------------------
+docs/_build/
+
+# ---------------------------------
+# Mypy / Type checkers
+# ---------------------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# ---------------------------------
+# Celery
+# ---------------------------------
+celerybeat-schedule
+celerybeat.pid
+
+# ---------------------------------
+# SageMath
+# ---------------------------------
+*.sage.py
+
+# ---------------------------------
+# Rope / Spyder
+# ---------------------------------
+.ropeproject
+.spyderproject
+.spyproject
+
+# ---------------------------------
+# Docker
+# ---------------------------------
+.docker/
+
+# ---------------------------------
+# Operating System
+# ---------------------------------
 .DS_Store
 Thumbs.db
 
-# Project specific
-data/models/*.pkl
-data/models/*.joblib
-data/synthetic/*.csv
-data/synthetic/*.json
-data/*.db
-data/*.sqlite
-data/*.sqlite3
-
-# Temporary files
-*.tmp
-*.bak
-*.old
-
-# Logs
-logs/
-*.log
-
-# Local development
-.env.local
-.env.development
-.env.production
-deployment/.env
-!.env.template
-!.env.example
-deployment/.env
-deployment/.env.*
-!deployment/.env.template
-
-# ML specific
+# ---------------------------------
+# Machine Learning / Data Science
+# ---------------------------------
 mlruns/
 outputs/
 checkpoints/
 wandb/
 
-# Documentation builds
-docs/_build/
-docs/.doctrees/
-
-# Test outputs
-test_output/
-test_results/
-
-# Model artifacts (except versioned ones)
+# Model files (except versioned placeholders)
 *.h5
 *.hdf5
 *.pt
 *.pth
 *.onnx
 
-# Data files (keep structure, ignore content)
-data/**/*.csv
-data/**/*.xlsx
-data/**/*.xls
-data/**/*.parquet
-!data/.gitkeep
-!data/*/.gitkeep
+# Model artifacts - keep gitkeep placeholders
+data/models/*.pkl
+data/models/*.joblib
+data/models/*.json
+!data/models/.gitkeep
 
-# Keep feature definitions
+# Synthetic data
+data/synthetic/*.csv
+data/synthetic/*.json
+!data/synthetic/.gitkeep
+data/synthetic/uploads/
+!data/synthetic/uploads/.gitkeep
+
+# Real clinical data
+data/real_clinical_data.xlsx
+
+# Feature definitions (keep)
 !data/feature_definitions.json
 
-# Database dumps
+# Reports
+reports/
+*.html
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 *.sql
 *.dump
+data/neurorisk.db
 
-# Credentials and secrets
+# Credentials / Secrets
 credentials/
 secrets/
 *.pem
 *.key
 *.crt
 
-# Real clinical data
-data/real_clinical_data.xlsx
+# PostgreSQL data
+postgres_data/
