@@ -20,7 +20,6 @@ from app.routes import (
     submit_router,
     stats_router,
     auth_router,
-    learning_router,
     retrain_router
 )
 from app.schemas.response import ErrorResponse, HealthCheckResponse
@@ -126,7 +125,7 @@ Most endpoints require JWT authentication. Use `/api/v1/auth/login` to obtain a 
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.get_cors_origins_list(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -320,9 +319,13 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Prometheus metrics endpoint (optional)
 if settings.enable_metrics:
-    from prometheus_client import make_asgi_app
-    metrics_app = make_asgi_app()
-    app.mount(settings.metrics_endpoint, metrics_app)
+    try:
+        from prometheus_client import make_asgi_app
+        metrics_app = make_asgi_app()
+        app.mount(settings.metrics_endpoint, metrics_app)
+        logger.info(f"Metrics endpoint enabled at {settings.metrics_endpoint}")
+    except ImportError:
+        logger.warning("prometheus_client not installed, metrics endpoint disabled")
 
 if __name__ == "__main__":
     import uvicorn
