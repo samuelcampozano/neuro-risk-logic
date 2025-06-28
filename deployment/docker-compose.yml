@@ -41,14 +41,18 @@ services:
     volumes:
       - ../data:/app/data
       - ../logs:/app/logs
+      - ./alembic.ini:/app/alembic.ini:ro
+      - ./alembic:/app/alembic:ro
     networks:
       - neurorisk_network
     restart: unless-stopped
     command: >
       sh -c "
         echo 'Waiting for database to be ready...' &&
-        sleep 5 &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
         python -m alembic upgrade head &&
+        echo 'Starting FastAPI application...' &&
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
       "
 
@@ -90,7 +94,6 @@ services:
       - neurorisk_network
     restart: unless-stopped
 
-  # Optional: Monitoring with Prometheus
   prometheus:
     image: prom/prometheus:latest
     container_name: neurorisk_prometheus
@@ -106,7 +109,6 @@ services:
       - neurorisk_network
     restart: unless-stopped
 
-  # Optional: PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: neurorisk_pgadmin

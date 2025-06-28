@@ -8,8 +8,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Add project root to Python path (go up two levels from deployment/alembic)
-sys.path.append(str(Path(__file__).parent.parent.parent))
+# Add project root to Python path
+sys.path.append(str(Path(__file__).parent.parent))
 
 # Import your app config and models
 from app.config import settings
@@ -20,11 +20,9 @@ from app.models import assessment  # Import all your models here
 # access to the values within the .ini file in use.
 config = context.config
 
-# Override with environment variables if present
-if os.getenv('DATABASE_URL'):
-    config.set_main_option('sqlalchemy.url', os.getenv('DATABASE_URL'))
-else:
-    config.set_main_option('sqlalchemy.url', settings.database_url)
+# Override with environment variables
+database_url = os.getenv('DATABASE_URL', settings.database_url)
+config.set_main_option('sqlalchemy.url', database_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
@@ -52,7 +50,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = settings.database_url
+    configuration['sqlalchemy.url'] = database_url
     
     connectable = engine_from_config(
         configuration,
