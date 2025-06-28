@@ -10,7 +10,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-neurorisk_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     networks:
@@ -41,8 +40,6 @@ services:
     volumes:
       - ../data:/app/data
       - ../logs:/app/logs
-      - ./alembic.ini:/app/alembic.ini:ro
-      - ./alembic:/app/alembic:ro
     networks:
       - neurorisk_network
     restart: unless-stopped
@@ -50,10 +47,10 @@ services:
       sh -c "
         echo 'Waiting for database to be ready...' &&
         sleep 10 &&
-        echo 'Running database migrations...' &&
-        python -m alembic upgrade head &&
+        echo 'Creating database tables...' &&
+        python -c 'from app.database import init_db; init_db()' &&
         echo 'Starting FastAPI application...' &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
       "
 
   retraining:
