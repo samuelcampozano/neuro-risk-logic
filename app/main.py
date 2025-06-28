@@ -11,6 +11,9 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.database import init_db, check_db_connection
@@ -20,7 +23,6 @@ from app.routes import (
     submit_router,
     stats_router,
     auth_router,
-    train_router,
     retrain_router
 )
 from app.schemas.response import ErrorResponse, HealthCheckResponse
@@ -37,6 +39,9 @@ logger.add(
     retention="10 days",
     level=settings.log_level
 )
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
@@ -107,6 +112,7 @@ providing evidence-based risk predictions for neurodevelopmental disorders.
 - 🤖 Machine learning predictions with interpretable results
 - 🔐 Secure API with JWT authentication
 - 📊 Detailed analytics and clinical recommendations
+- 🔄 Automated model retraining with new data
 
 ### Authentication
 Most endpoints require JWT authentication. Use `/api/v1/auth/login` to obtain a token.
@@ -123,10 +129,14 @@ Most endpoints require JWT authentication. Use `/api/v1/auth/login` to obtain a 
     openapi_url="/openapi.json" if not settings.is_production else "/api/openapi.json"
 )
 
+# Add rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_cors_origins_list(),
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -140,7 +150,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 if settings.is_production:
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.yourdomain.com", "yourdomain.com"]
+        allowed_hosts=["*.yourdomain.com", "yourdomain.com", "localhost"]
     )
 
 # Request timing middleware
@@ -158,25 +168,25 @@ app.include_router(predict_router)
 app.include_router(submit_router)
 app.include_router(stats_router)
 app.include_router(auth_router)
-app.include_router(train_router)
 app.include_router(retrain_router)
 
-# Root endpoint
+# Root endpoint with rate limiting
 @app.get(
     "/",
     tags=["root"],
     summary="API Information",
     description="Get general information about the API"
 )
-async def root():
+@limiter.limit("10/minute")
+async def root(request: Request):
     """Root endpoint with API information."""
     return {
         "name": settings.app_name,
         "version": settings.app_version,
         "description": "AI-Powered Neurodevelopmental Risk Assessment System",
         "documentation": {
-            "swagger": "/docs",
-            "redoc": "/redoc",
+            "swagger": "/docs" if not settings.is_production else None,
+            "redoc": "/redoc" if not settings.is_production else None,
             "openapi": "/api/openapi.json"
         },
         "endpoints": {
@@ -184,7 +194,8 @@ async def root():
             "predict": "/api/v1/predict",
             "assessments": "/api/v1/assessments",
             "statistics": "/api/v1/stats",
-            "authentication": "/api/v1/auth/login"
+            "authentication": "/api/v1/auth/login",
+            "retraining": "/api/v1/retrain"
         },
         "environment": settings.environment,
         "timestamp": datetime.utcnow().isoformat()
@@ -321,13 +332,9 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Prometheus metrics endpoint (optional)
 if settings.enable_metrics:
-    try:
-        from prometheus_client import make_asgi_app
-        metrics_app = make_asgi_app()
-        app.mount(settings.metrics_endpoint, metrics_app)
-        logger.info(f"Metrics endpoint enabled at {settings.metrics_endpoint}")
-    except ImportError:
-        logger.warning("prometheus_client not installed, metrics endpoint disabled")
+    from prometheus_client import make_asgi_app
+    metrics_app = make_asgi_app()
+    app.mount(settings.metrics_endpoint, metrics_app)
 
 if __name__ == "__main__":
     import uvicorn

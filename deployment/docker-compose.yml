@@ -32,6 +32,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - POSTGRES_HOST=db
+      - PYTHONPATH=/app
     ports:
       - "${APP_PORT:-8000}:8000"
     depends_on:
@@ -47,10 +48,8 @@ services:
       sh -c "
         echo 'Waiting for database to be ready...' &&
         sleep 5 &&
-        cd /app/deployment &&
-        alembic upgrade head &&
-        cd /app &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000
+        python -m alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
       "
 
   retraining:
@@ -63,9 +62,12 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - POSTGRES_HOST=db
+      - PYTHONPATH=/app
     depends_on:
       db:
         condition: service_healthy
+      api:
+        condition: service_started
     volumes:
       - ../data:/app/data
       - ../logs:/app/logs
