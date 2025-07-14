@@ -1,4 +1,4 @@
-# NeuroRiskLogic 🧠
+# Calculadora de Riesgo de la Alteración en la Salud Mental 🧠
 
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com/)
@@ -7,7 +7,7 @@
 
 ## Overview
 
-NeuroRiskLogic is an AI-powered risk assessment system for neurodevelopmental disorders. It uses machine learning to analyze clinical and sociodemographic factors, providing healthcare professionals with evidence-based risk predictions without requiring explicit diagnostic labels.
+Calculadora de Riesgo de la Alteración en la Salud Mental (Mental Health Risk Calculator) is an AI-powered risk assessment system for mental health alterations. It uses machine learning to analyze clinical and sociodemographic factors, providing healthcare professionals with evidence-based risk predictions without requiring explicit diagnostic labels.
 
 ### Key Features
 
