@@ -1,0 +1,275 @@
+{
+  "nombre_sistema": "Calculadora de Riesgo de Alteración en la Salud Mental",
+  "version": "1.0.0",
+  "preguntas": [
+    {
+      "id": 1,
+      "campo": "consanguinity",
+      "pregunta_original": "Are the subject's parents blood-related?",
+      "pregunta_corregida": "¿Mis padres son parientes consanguíneos?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.15,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Strong genetic risk factor for neurodevelopmental disorders"
+    },
+    {
+      "id": 11,
+      "campo": "suicide_ideation",
+      "pregunta_original": "History of suicide attempts or ideation?",
+      "pregunta_corregida": "¿He tenido intentos de suicidio o ideación suicida?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.13,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Severe psychiatric vulnerability indicator"
+    },
+    {
+      "id": 2,
+      "campo": "family_neuro_history",
+      "pregunta_original": "Does the subject have a family history of neurological disorders?",
+      "pregunta_corregida": "¿Tengo antecedentes familiares de trastornos neurológicos o psiquiátricos?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.12,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "High hereditary correlation with neurodevelopmental conditions"
+    },
+    {
+      "id": 5,
+      "campo": "psychiatric_diagnosis",
+      "pregunta_original": "Diagnosed with any psychiatric disorder (depression, bipolar, etc.)?",
+      "pregunta_corregida": "Diagnosed with any psychiatric disorder (depression, bipolar, etc.)?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.11,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Directly linked to neurodevelopmental risk"
+    },
+    {
+      "id": 3,
+      "campo": "seizures_history",
+      "pregunta_original": "Has the subject ever had seizures or convulsions?",
+      "pregunta_corregida": "¿He tenido alguna vez convulsiones o crisis epilépticas?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.1,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Possible neurological abnormality indicator"
+    },
+    {
+      "id": 18,
+      "campo": "violence_exposure",
+      "pregunta_original": "Exposure to violence or trauma (childhood or adulthood)?",
+      "pregunta_corregida": "¿He estado expuesto/a a violencia o trauma (infancia o adultez)?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.1,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Long-term mental health impact"
+    },
+    {
+      "id": 4,
+      "campo": "brain_injury_history",
+      "pregunta_original": "History of traumatic brain injury (TBI) or head trauma?",
+      "pregunta_corregida": "¿He tenido alguna lesión cerebral traumática o trauma craneal?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.09,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Known to increase risk of neurodevelopmental disorders"
+    },
+    {
+      "id": 7,
+      "campo": "birth_complications",
+      "pregunta_original": "Was the subject born with complications or low weight?",
+      "pregunta_corregida": "¿Nací con complicaciones o bajo peso?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.09,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Birth complications are correlated with neurological risks"
+    },
+    {
+      "id": 13,
+      "campo": "disability_diagnosis",
+      "pregunta_original": "Has the subject ever been diagnosed with a disability?",
+      "pregunta_corregida": "¿He sido diagnosticado/a con alguna discapacidad?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.09,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Related to neurodivergence"
+    },
+    {
+      "id": 6,
+      "campo": "substance_use",
+      "pregunta_original": "Does the subject consume psychoactive substances regularly?",
+      "pregunta_corregida": "¿Consumo sustancias psicoactivas regularmente?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.08,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Risk factor for mental/neurological health"
+    },
+    {
+      "id": 10,
+      "campo": "healthcare_access",
+      "pregunta_original": "Does the subject have access to mental healthcare?",
+      "pregunta_corregida": "¿Tengo acceso a servicios de salud mental?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.08,
+      "direccion_riesgo": "negative",
+      "relevancia_clinica": "Lack of care increases long-term undetected conditions"
+    },
+    {
+      "id": 14,
+      "campo": "social_support_level",
+      "pregunta_original": "Level of social support (isolated vs. supported)",
+      "pregunta_corregida": "Level of social support (isolated vs. supported)",
+      "tipo": "categorical",
+      "categoria": "sociodemographic",
+      "peso": 0.08,
+      "direccion_riesgo": "varies",
+      "relevancia_clinica": "Social context moderates risk"
+    },
+    {
+      "id": 8,
+      "campo": "extreme_poverty",
+      "pregunta_original": "Does the subject live in extreme poverty?",
+      "pregunta_corregida": "¿Vivo en condiciones de pobreza extrema?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.07,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Strong environmental risk factor"
+    },
+    {
+      "id": 12,
+      "campo": "psychotropic_medication",
+      "pregunta_original": "Is the subject on psychotropic or neurological medication?",
+      "pregunta_corregida": "¿Estoy tomando medicación psicotrópica o neurológica?",
+      "tipo": "binary",
+      "categoria": "clinical_genetic",
+      "peso": 0.07,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Indicates treatment for pre-existing conditions"
+    },
+    {
+      "id": 9,
+      "campo": "education_access_issues",
+      "pregunta_original": "Has the subject ever had access restrictions to education?",
+      "pregunta_corregida": "¿He tenido restricciones de acceso a la educación?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.06,
+      "direccion_riesgo": "positive",
+      "relevancia_clinica": "Low cognitive stimulation increases risk"
+    },
+    {
+      "id": 17,
+      "campo": "breastfed_infancy",
+      "pregunta_original": "Was the subject breastfed during infancy?",
+      "pregunta_corregida": "¿Fui amamantado/a durante la infancia?",
+      "tipo": "binary",
+      "categoria": "sociodemographic",
+      "peso": 0.05,
+      "direccion_riesgo": "negative",
+      "relevancia_clinica": "Proxy for early nutrition and stimulation"
+    }
+  ],
+  "factores_riesgo": [
+    {
+      "nombre": "Parental Consanguinity",
+      "campo": "consanguinity",
+      "peso": 0.15
+    },
+    {
+      "nombre": "Family Neurological History",
+      "campo": "family_neuro_history",
+      "peso": 0.12
+    },
+    {
+      "nombre": "Seizures/Convulsions History",
+      "campo": "seizures_history",
+      "peso": 0.1
+    },
+    {
+      "nombre": "Brain Injury History",
+      "campo": "brain_injury_history",
+      "peso": 0.09
+    },
+    {
+      "nombre": "Psychiatric Diagnosis",
+      "campo": "psychiatric_diagnosis",
+      "peso": 0.11
+    },
+    {
+      "nombre": "Psychoactive Substance Use",
+      "campo": "substance_use",
+      "peso": 0.08
+    },
+    {
+      "nombre": "Birth Complications",
+      "campo": "birth_complications",
+      "peso": 0.09
+    },
+    {
+      "nombre": "Extreme Poverty",
+      "campo": "extreme_poverty",
+      "peso": 0.07
+    },
+    {
+      "nombre": "Education Access Restrictions",
+      "campo": "education_access_issues",
+      "peso": 0.06
+    },
+    {
+      "nombre": "Suicide Ideation/Attempts",
+      "campo": "suicide_ideation",
+      "peso": 0.13
+    },
+    {
+      "nombre": "Psychotropic Medication",
+      "campo": "psychotropic_medication",
+      "peso": 0.07
+    },
+    {
+      "nombre": "Disability Diagnosis",
+      "campo": "disability_diagnosis",
+      "peso": 0.09
+    },
+    {
+      "nombre": "Violence/Trauma Exposure",
+      "campo": "violence_exposure",
+      "peso": 0.1
+    }
+  ],
+  "factores_protectores": [
+    {
+      "nombre": "Mental Healthcare Access",
+      "campo": "healthcare_access",
+      "peso": 0.08
+    },
+    {
+      "nombre": "Breastfed During Infancy",
+      "campo": "breastfed_infancy",
+      "peso": 0.05
+    }
+  ],
+  "recomendaciones_posibles": [
+    "Develop social support network and community connections",
+    "Genetic counseling may be beneficial",
+    "Continue routine developmental monitoring",
+    "Ensure ongoing psychiatric care and medication compliance",
+    "URGENT: Immediate psychiatric intervention required",
+    "Facilitate access to mental health services",
+    "Implement suicide prevention protocol"
+  ],
+  "umbrales_riesgo": {
+    "bajo": "0.0 - 0.3",
+    "moderado": "0.3 - 0.7",
+    "alto": "0.7 - 1.0"
+  }
+}
