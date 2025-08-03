@@ -229,3 +229,8 @@ secrets/
 
 # PostgreSQL data
 postgres_data/
+
+# ---------------------------------
+# Claude Code
+# ---------------------------------
+.claude/
