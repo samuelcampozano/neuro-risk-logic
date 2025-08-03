@@ -28,7 +28,7 @@ class NeurodevelopmentalPredictor:
         """Initialize predictor with model and feature definitions."""
         self.model: Optional[RandomForestClassifier] = None
         self.feature_definitions = load_feature_definitions()
-        self.model_path = settings.current_model_path
+        self.model_path = settings.get_model_path()
         self.model_metadata: Dict[str, Any] = {}
         self.is_loaded = False
 
