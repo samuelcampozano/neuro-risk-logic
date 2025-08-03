@@ -20,27 +20,27 @@ if settings.database_url.startswith("sqlite"):
         settings.database_url,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        echo=settings.debug
+        echo=settings.debug,
     )
-    
+
     # Enable foreign keys for SQLite
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
-    
+
     logger.info("Using SQLite database for development")
-    
+
 elif settings.database_url.startswith("postgresql"):
     # PostgreSQL configuration for production
     # For Docker environments, we might need to handle connection retries
     import time
     from sqlalchemy.exc import OperationalError
-    
+
     max_retries = 5
     retry_interval = 5
-    
+
     for attempt in range(max_retries):
         try:
             engine = create_engine(
@@ -49,7 +49,7 @@ elif settings.database_url.startswith("postgresql"):
                 pool_recycle=300,
                 pool_size=10,
                 max_overflow=20,
-                echo=settings.debug
+                echo=settings.debug,
             )
             # Test connection
             with engine.connect() as conn:
@@ -58,13 +58,16 @@ elif settings.database_url.startswith("postgresql"):
             break
         except OperationalError as e:
             if attempt < max_retries - 1:
-                logger.warning(f"Failed to connect to PostgreSQL (attempt {attempt + 1}/{max_retries}): {str(e)}")
+                logger.warning(
+                    f"Failed to connect to PostgreSQL "
+                    f"(attempt {attempt + 1}/{max_retries}): {str(e)}"
+                )
                 logger.info(f"Retrying in {retry_interval} seconds...")
                 time.sleep(retry_interval)
             else:
                 logger.error(f"Failed to connect to PostgreSQL after {max_retries} attempts")
                 raise
-    
+
 else:
     raise ValueError(f"Unsupported database URL: {settings.database_url}")
 
@@ -82,7 +85,7 @@ def get_db() -> Generator[Session, None, None]:
     """
     Dependency function to get database session.
     Ensures proper cleanup after request completion.
-    
+
     Yields:
         Session: SQLAlchemy database session
     """
@@ -100,11 +103,11 @@ def init_db() -> None:
     """
     # Import all models to ensure they're registered
     from app.models import assessment  # noqa
-    
+
     # Create data directory for SQLite if needed
     if settings.database_url.startswith("sqlite"):
         os.makedirs("data", exist_ok=True)
-    
+
     # Create all tables
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created successfully")
@@ -113,7 +116,7 @@ def init_db() -> None:
 def check_db_connection() -> bool:
     """
     Test database connection.
-    
+
     Returns:
         bool: True if connection successful, False otherwise
     """
@@ -131,12 +134,12 @@ def check_db_connection() -> bool:
 def get_db_stats() -> dict:
     """
     Get database statistics and information.
-    
+
     Returns:
         dict: Database statistics
     """
     from app.models.assessment import Assessment
-    
+
     db = SessionLocal()
     try:
         stats = {
@@ -147,7 +150,7 @@ def get_db_stats() -> dict:
             "connection_pool": {
                 "size": getattr(engine.pool, "size", "N/A"),
                 "checked_out": getattr(engine.pool, "checked_out", "N/A"),
-            }
+            },
         }
         return stats
     except Exception as e:

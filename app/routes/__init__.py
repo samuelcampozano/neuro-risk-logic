@@ -8,10 +8,4 @@ from app.routes.stats import router as stats_router
 from app.routes.auth import router as auth_router
 from app.routes.retrain import router as retrain_router
 
-__all__ = [
-    "predict_router",
-    "submit_router", 
-    "stats_router",
-    "auth_router",
-    "retrain_router"
-]
+__all__ = ["predict_router", "submit_router", "stats_router", "auth_router", "retrain_router"]

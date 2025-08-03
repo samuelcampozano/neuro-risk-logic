@@ -9,40 +9,21 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class PredictionResponse(BaseModel):
     """Response model for risk predictions."""
-    
-    risk_score: float = Field(
-        ..., 
-        ge=0.0, 
-        le=1.0,
-        description="Risk probability (0.0 to 1.0)"
-    )
-    risk_level: str = Field(
-        ..., 
-        description="Risk category (low/moderate/high)"
-    )
+
+    risk_score: float = Field(..., ge=0.0, le=1.0, description="Risk probability (0.0 to 1.0)")
+    risk_level: str = Field(..., description="Risk category (low/moderate/high)")
     confidence_score: float = Field(
-        ..., 
-        ge=0.0, 
-        le=1.0,
-        description="Model confidence in prediction"
+        ..., ge=0.0, le=1.0, description="Model confidence in prediction"
     )
-    risk_factors: List[str] = Field(
-        ..., 
-        description="Key risk factors identified"
-    )
-    protective_factors: List[str] = Field(
-        ..., 
-        description="Protective factors identified"
-    )
+    risk_factors: List[str] = Field(..., description="Key risk factors identified")
+    protective_factors: List[str] = Field(..., description="Protective factors identified")
     feature_importance: Optional[Dict[str, float]] = Field(
-        None,
-        description="Feature contributions to prediction"
+        None, description="Feature contributions to prediction"
     )
     recommendations: List[str] = Field(
-        default_factory=list,
-        description="Clinical recommendations based on risk"
+        default_factory=list, description="Clinical recommendations based on risk"
     )
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -52,22 +33,19 @@ class PredictionResponse(BaseModel):
                 "risk_factors": [
                     "Family history of neurological disorders",
                     "Psychiatric diagnosis present",
-                    "Limited social support"
+                    "Limited social support",
                 ],
-                "protective_factors": [
-                    "Access to healthcare",
-                    "No substance use"
-                ],
+                "protective_factors": ["Access to healthcare", "No substance use"],
                 "feature_importance": {
                     "family_neuro_history": 0.25,
                     "psychiatric_diagnosis": 0.18,
-                    "social_support_level": 0.12
+                    "social_support_level": 0.12,
                 },
                 "recommendations": [
                     "Comprehensive neurological evaluation recommended",
                     "Consider psychiatric support services",
-                    "Enhance social support network"
-                ]
+                    "Enhance social support network",
+                ],
             }
         }
     )
@@ -75,13 +53,13 @@ class PredictionResponse(BaseModel):
 
 class AssessmentResponse(BaseModel):
     """Response model for completed assessments."""
-    
+
     success: bool = Field(True, description="Operation success status")
     assessment_id: int = Field(..., description="Database ID of saved assessment")
     prediction: PredictionResponse = Field(..., description="Risk prediction results")
     model_version: str = Field(..., description="Version of model used")
     timestamp: datetime = Field(..., description="Assessment timestamp")
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -93,10 +71,10 @@ class AssessmentResponse(BaseModel):
                     "confidence_score": 0.92,
                     "risk_factors": ["Birth complications"],
                     "protective_factors": ["Good social support", "Healthcare access"],
-                    "recommendations": ["Regular monitoring recommended"]
+                    "recommendations": ["Regular monitoring recommended"],
                 },
                 "model_version": "v1.0.0",
-                "timestamp": "2024-01-15T10:30:00"
+                "timestamp": "2024-01-15T10:30:00",
             }
         }
     )
@@ -104,19 +82,19 @@ class AssessmentResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Schema for error responses."""
-    
+
     error: str = Field(..., description="Error type")
     detail: str = Field(..., description="Detailed error message")
     status_code: int = Field(..., description="HTTP status code")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "error": "ValidationError",
                 "detail": "Age must be between 0 and 120",
                 "status_code": 400,
-                "timestamp": "2024-01-15T10:30:00"
+                "timestamp": "2024-01-15T10:30:00",
             }
         }
     )
@@ -124,19 +102,19 @@ class ErrorResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     """Response model for authentication."""
-    
+
     access_token: str = Field(..., description="JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(..., description="Token expiration time in seconds")
     scopes: List[str] = Field(..., description="Granted permission scopes")
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
                 "expires_in": 1800,
-                "scopes": ["read", "write", "admin"]
+                "scopes": ["read", "write", "admin"],
             }
         }
     )
@@ -144,7 +122,7 @@ class TokenResponse(BaseModel):
 
 class ModelInfoResponse(BaseModel):
     """Response model for model information."""
-    
+
     model_type: str = Field(..., description="Type of ML model")
     model_version: str = Field(..., description="Current model version")
     features_count: int = Field(..., description="Number of input features")
@@ -152,7 +130,7 @@ class ModelInfoResponse(BaseModel):
     performance_metrics: Dict[str, float] = Field(..., description="Model performance metrics")
     feature_definitions: List[Dict[str, Any]] = Field(..., description="Feature specifications")
     is_loaded: bool = Field(..., description="Whether model is loaded in memory")
-    
+
     model_config = ConfigDict(
         protected_namespaces=(),
         json_schema_extra={
@@ -166,21 +144,21 @@ class ModelInfoResponse(BaseModel):
                     "precision": 0.82,
                     "recall": 0.88,
                     "f1_score": 0.85,
-                    "auc_roc": 0.91
+                    "auc_roc": 0.91,
                 },
                 "feature_definitions": [
                     {"name": "consanguinity", "type": "binary", "importance": 0.15},
-                    {"name": "family_neuro_history", "type": "binary", "importance": 0.12}
+                    {"name": "family_neuro_history", "type": "binary", "importance": 0.12},
                 ],
-                "is_loaded": True
+                "is_loaded": True,
             }
-        }
+        },
     )
 
 
 class StatsResponse(BaseModel):
     """Response model for system statistics."""
-    
+
     total_assessments: int = Field(..., description="Total number of assessments")
     assessments_by_risk_level: Dict[str, int] = Field(..., description="Distribution by risk level")
     assessments_by_gender: Dict[str, int] = Field(..., description="Distribution by gender")
@@ -189,47 +167,36 @@ class StatsResponse(BaseModel):
     most_common_risk_factors: List[Dict[str, Any]] = Field(..., description="Top risk factors")
     assessments_last_30_days: int = Field(..., description="Recent assessment count")
     model_performance: Dict[str, float] = Field(..., description="Current model metrics")
-    
+
     model_config = ConfigDict(
         protected_namespaces=(),
         json_schema_extra={
             "example": {
                 "total_assessments": 1523,
-                "assessments_by_risk_level": {
-                    "low": 612,
-                    "moderate": 687,
-                    "high": 224
-                },
-                "assessments_by_gender": {
-                    "M": 798,
-                    "F": 705,
-                    "Other": 20
-                },
+                "assessments_by_risk_level": {"low": 612, "moderate": 687, "high": 224},
+                "assessments_by_gender": {"M": 798, "F": 705, "Other": 20},
                 "average_risk_score": 0.42,
                 "average_age": 31.5,
                 "most_common_risk_factors": [
                     {"factor": "family_neuro_history", "frequency": 0.35},
                     {"factor": "psychiatric_diagnosis", "frequency": 0.28},
-                    {"factor": "extreme_poverty", "frequency": 0.22}
+                    {"factor": "extreme_poverty", "frequency": 0.22},
                 ],
                 "assessments_last_30_days": 145,
-                "model_performance": {
-                    "current_accuracy": 0.86,
-                    "current_auc": 0.92
-                }
+                "model_performance": {"current_accuracy": 0.86, "current_auc": 0.92},
             }
-        }
+        },
     )
 
 
 class HealthCheckResponse(BaseModel):
     """Response model for health check endpoint."""
-    
+
     status: str = Field(..., description="Service health status")
     version: str = Field(..., description="API version")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     services: Dict[str, Dict[str, Any]] = Field(..., description="Individual service statuses")
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -237,20 +204,10 @@ class HealthCheckResponse(BaseModel):
                 "version": "1.0.0",
                 "timestamp": "2024-01-15T10:30:00",
                 "services": {
-                    "database": {
-                        "status": "connected",
-                        "response_time_ms": 5
-                    },
-                    "ml_model": {
-                        "status": "loaded",
-                        "version": "v1.0.0",
-                        "memory_usage_mb": 150
-                    },
-                    "cache": {
-                        "status": "active",
-                        "hit_rate": 0.85
-                    }
-                }
+                    "database": {"status": "connected", "response_time_ms": 5},
+                    "ml_model": {"status": "loaded", "version": "v1.0.0", "memory_usage_mb": 150},
+                    "cache": {"status": "active", "hit_rate": 0.85},
+                },
             }
         }
     )

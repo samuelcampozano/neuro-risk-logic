@@ -72,17 +72,13 @@ class RiskCalculator:
                 if feature_name == "age":
                     # Age-specific risk patterns
                     if value < 5:
-                        risk_factors.append(
-                            "Very young age (early developmental stage)"
-                        )
+                        risk_factors.append("Very young age (early developmental stage)")
                     elif value > 65:
                         risk_factors.append("Advanced age")
 
         # Sort by contribution if available
         if feature_contributions:
-            risk_factors.sort(
-                key=lambda x: abs(feature_contributions.get(x, 0)), reverse=True
-            )
+            risk_factors.sort(key=lambda x: abs(feature_contributions.get(x, 0)), reverse=True)
             protective_factors.sort(
                 key=lambda x: abs(feature_contributions.get(x, 0)), reverse=True
             )
@@ -114,14 +110,10 @@ class RiskCalculator:
 
         # Base recommendations by risk level
         if risk_level == "high":
-            recommendations.append(
-                "Comprehensive mental health evaluation recommended"
-            )
+            recommendations.append("Comprehensive mental health evaluation recommended")
             recommendations.append("Priority referral to specialist care")
         elif risk_level == "moderate":
-            recommendations.append(
-                "Mental health screening recommended within 3 months"
-            )
+            recommendations.append("Mental health screening recommended within 3 months")
             recommendations.append("Regular monitoring of symptoms")
         else:
             recommendations.append("Continue routine health monitoring")
@@ -131,9 +123,7 @@ class RiskCalculator:
             recommendations.append("Genetic counseling may be beneficial")
 
         if assessment_data.get("psychiatric_diagnosis"):
-            recommendations.append(
-                "Ensure ongoing psychiatric care and medication compliance"
-            )
+            recommendations.append("Ensure ongoing psychiatric care and medication compliance")
 
         if assessment_data.get("seizures_history"):
             recommendations.append("Neurological evaluation with EEG recommended")
@@ -152,18 +142,14 @@ class RiskCalculator:
             recommendations.append("Facilitate access to mental health services")
 
         if assessment_data.get("social_support_level") == "isolated":
-            recommendations.append(
-                "Develop social support network and community connections"
-            )
+            recommendations.append("Develop social support network and community connections")
 
         if assessment_data.get("violence_exposure"):
             recommendations.append("Trauma-informed therapy recommended")
 
         # Educational recommendations
         if assessment_data.get("education_access_issues"):
-            recommendations.append(
-                "Educational support and cognitive stimulation programs"
-            )
+            recommendations.append("Educational support and cognitive stimulation programs")
 
         # Remove duplicates while preserving order
         seen = set()
@@ -175,9 +161,7 @@ class RiskCalculator:
 
         return unique_recommendations
 
-    def interpret_risk_level(
-        self, risk_score: float, confidence_score: float
-    ) -> Dict[str, Any]:
+    def interpret_risk_level(self, risk_score: float, confidence_score: float) -> Dict[str, Any]:
         """
         Provide detailed interpretation of risk assessment.
 
@@ -193,19 +177,28 @@ class RiskCalculator:
         interpretations = {
             "low": {
                 "summary": "Low risk of mental health alterations",
-                "description": "Current assessment indicates minimal risk factors. Continue standard care and monitoring.",
+                "description": (
+                    "Current assessment indicates minimal risk factors. "
+                    "Continue standard care and monitoring."
+                ),
                 "action_priority": "routine",
                 "follow_up_months": 12,
             },
             "moderate": {
                 "summary": "Moderate risk of mental health alterations",
-                "description": "Several risk factors identified that warrant closer monitoring and possible intervention.",
+                "description": (
+                    "Several risk factors identified that warrant closer monitoring "
+                    "and possible intervention."
+                ),
                 "action_priority": "elevated",
                 "follow_up_months": 3,
             },
             "high": {
                 "summary": "High risk of mental health alterations",
-                "description": "Multiple significant risk factors present. Evaluation and intervention recommended.",
+                "description": (
+                    "Multiple significant risk factors present. "
+                    "Evaluation and intervention recommended."
+                ),
                 "action_priority": "priority",
                 "follow_up_months": 1,
             },
@@ -223,9 +216,7 @@ class RiskCalculator:
                 "confidence_note"
             ] = "Model confidence is low. Results should be interpreted with caution."
         else:
-            interpretation[
-                "confidence_note"
-            ] = "Model shows high confidence in this assessment."
+            interpretation["confidence_note"] = "Model shows high confidence in this assessment."
 
         interpretation["risk_score"] = risk_score
         interpretation["risk_level"] = risk_level
@@ -268,14 +259,10 @@ def generate_recommendations(
         List of recommendations
     """
     calculator = RiskCalculator()
-    return calculator.generate_recommendations(
-        risk_level, risk_factors, assessment_data
-    )
+    return calculator.generate_recommendations(risk_level, risk_factors, assessment_data)
 
 
-def interpret_risk_level(
-    risk_score: float, confidence_score: float
-) -> Dict[str, Any]:
+def interpret_risk_level(risk_score: float, confidence_score: float) -> Dict[str, Any]:
     """
     Convenience function to interpret risk level.
 

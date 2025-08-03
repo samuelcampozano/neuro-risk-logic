@@ -14,21 +14,14 @@ from app.models.assessment import Assessment
 from app.models.predictor import get_predictor
 from app.schemas.request import AssessmentRequest
 from app.schemas.response import AssessmentResponse, ErrorResponse
-from app.schemas.assessment import (
-    AssessmentInDB, 
-    AssessmentDetail,
-    AssessmentUpdate
-)
+from app.schemas.assessment import AssessmentInDB, AssessmentDetail, AssessmentUpdate
 from app.auth import require_token, require_write_permission, TokenData
 from loguru import logger
 
 router = APIRouter(
     prefix="/api/v1",
     tags=["assessments"],
-    responses={
-        401: {"description": "Unauthorized"},
-        404: {"description": "Not found"}
-    }
+    responses={401: {"description": "Unauthorized"}, 404: {"description": "Not found"}},
 )
 
 
@@ -37,22 +30,21 @@ router = APIRouter(
     response_model=AssessmentResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Submit new assessment",
-    description="Submit a neurodevelopmental risk assessment (PUBLIC endpoint)"
+    description="Submit a neurodevelopmental risk assessment (PUBLIC endpoint)",
 )
 async def submit_assessment(
-    request: AssessmentRequest,
-    db: Session = Depends(get_db)
+    request: AssessmentRequest, db: Session = Depends(get_db)
 ) -> AssessmentResponse:
     """
     Submit a new assessment for risk calculation and storage.
-    
+
     This is a PUBLIC endpoint - no authentication required.
     Requires explicit consent for data storage.
-    
+
     Args:
         request: Assessment data with consent
         db: Database session
-        
+
     Returns:
         AssessmentResponse with prediction results
     """
@@ -61,14 +53,14 @@ async def submit_assessment(
         if not request.consent_given:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Consent is required to store assessment data"
+                detail="Consent is required to store assessment data",
             )
-        
+
         # Get predictor and make prediction
         predictor = get_predictor()
         assessment_data = request.model_dump()
         prediction_result = predictor.predict(assessment_data)
-        
+
         # Create assessment record
         assessment = Assessment(
             # Demographics
@@ -101,34 +93,33 @@ async def submit_assessment(
             model_version=prediction_result["model_version"],
             clinician_id=request.clinician_id,
             notes=request.notes,
-            consent_given=request.consent_given
+            consent_given=request.consent_given,
         )
-        
+
         # Save to database
         db.add(assessment)
         db.commit()
         db.refresh(assessment)
-        
+
         # Prepare response
         response = AssessmentResponse(
             success=True,
             assessment_id=assessment.id,
             prediction=prediction_result,
             model_version=prediction_result["model_version"],
-            timestamp=assessment.assessment_date
+            timestamp=assessment.assessment_date,
         )
-        
+
         logger.info(f"Assessment {assessment.id} submitted successfully")
         return response
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error submitting assessment: {str(e)}")
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing assessment"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error processing assessment"
         )
 
 
@@ -137,7 +128,7 @@ async def submit_assessment(
     response_model=List[AssessmentInDB],
     summary="List assessments (Protected)",
     description="Get paginated list of assessments - requires authentication",
-    dependencies=[Depends(require_token)]
+    dependencies=[Depends(require_token)],
 )
 async def list_assessments(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
@@ -145,13 +136,13 @@ async def list_assessments(
     risk_level: Optional[str] = Query(None, description="Filter by risk level"),
     clinician_id: Optional[str] = Query(None, description="Filter by clinician"),
     db: Session = Depends(get_db),
-    token_data: TokenData = Depends(require_token)
+    token_data: TokenData = Depends(require_token),
 ) -> List[AssessmentInDB]:
     """
     Get list of assessments with pagination and filtering.
-    
+
     This is a PROTECTED endpoint - requires authentication.
-    
+
     Args:
         skip: Offset for pagination
         limit: Maximum number of records
@@ -159,36 +150,34 @@ async def list_assessments(
         clinician_id: Optional filter by clinician
         db: Database session
         token_data: Authentication token
-        
+
     Returns:
         List of assessments
     """
     try:
         query = db.query(Assessment)
-        
+
         # Apply filters
         filters = []
         if risk_level:
             filters.append(Assessment.risk_level == risk_level.lower())
         if clinician_id:
             filters.append(Assessment.clinician_id == clinician_id)
-        
+
         if filters:
             query = query.filter(and_(*filters))
-        
+
         # Order by date descending
-        assessments = query.order_by(desc(Assessment.assessment_date))\
-                          .offset(skip)\
-                          .limit(limit)\
-                          .all()
-        
+        assessments = (
+            query.order_by(desc(Assessment.assessment_date)).offset(skip).limit(limit).all()
+        )
+
         return assessments
-        
+
     except Exception as e:
         logger.error(f"Error listing assessments: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error retrieving assessments"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error retrieving assessments"
         )
 
 
@@ -197,80 +186,72 @@ async def list_assessments(
     response_model=AssessmentDetail,
     summary="Get assessment details (Protected)",
     description="Get detailed assessment information - requires authentication",
-    dependencies=[Depends(require_token)]
+    dependencies=[Depends(require_token)],
 )
 async def get_assessment(
     assessment_id: int,
     db: Session = Depends(get_db),
-    token_data: TokenData = Depends(require_token)
+    token_data: TokenData = Depends(require_token),
 ) -> AssessmentDetail:
     """
     Get detailed information for a specific assessment.
-    
+
     This is a PROTECTED endpoint - requires authentication.
-    
+
     Args:
         assessment_id: Assessment ID
         db: Database session
         token_data: Authentication token
-        
+
     Returns:
         Detailed assessment information
     """
     try:
-        assessment = db.query(Assessment).filter(
-            Assessment.id == assessment_id
-        ).first()
-        
+        assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+
         if not assessment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Assessment {assessment_id} not found"
+                detail=f"Assessment {assessment_id} not found",
             )
-        
+
         # Get fresh prediction details for recommendations
         predictor = get_predictor()
         assessment_dict = assessment.to_dict()
-        
+
         # Extract feature data
         feature_data = {
             **assessment_dict["demographics"],
             **assessment_dict["clinical_factors"],
-            **assessment_dict["sociodemographic_factors"]
+            **assessment_dict["sociodemographic_factors"],
         }
-        
+
         # Get risk factors and recommendations
-        from app.utils.risk_calculator import (
-            calculate_risk_factors,
-            generate_recommendations
-        )
-        
+        from app.utils.risk_calculator import calculate_risk_factors, generate_recommendations
+
         risk_factors, protective_factors = calculate_risk_factors(
-            feature_data,
-            assessment.feature_contributions
+            feature_data, assessment.feature_contributions
         )
-        
+
         recommendations = generate_recommendations(
-            assessment.risk_level,
-            risk_factors,
-            feature_data
+            assessment.risk_level, risk_factors, feature_data
         )
-        
+
         # Create detailed response
         detail = AssessmentDetail.from_orm(assessment)
         detail.risk_factors = risk_factors
         detail.protective_factors = protective_factors
         detail.recommendations = recommendations
-        
+
         return detail
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting assessment {assessment_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error retrieving assessment details"
+            detail="Error retrieving assessment details",
         )
 
 
@@ -279,57 +260,67 @@ async def get_assessment(
     response_model=AssessmentInDB,
     summary="Update assessment (Protected)",
     description="Update assessment data - requires write permission",
-    dependencies=[Depends(require_write_permission)]
+    dependencies=[Depends(require_write_permission)],
 )
 async def update_assessment(
     assessment_id: int,
     update_data: AssessmentUpdate,
     db: Session = Depends(get_db),
-    token_data: TokenData = Depends(require_write_permission)
+    token_data: TokenData = Depends(require_write_permission),
 ) -> AssessmentInDB:
     """
     Update an existing assessment.
-    
+
     This is a PROTECTED endpoint - requires write permission.
-    
+
     Args:
         assessment_id: Assessment ID
         update_data: Fields to update
         db: Database session
         token_data: Authentication token
-        
+
     Returns:
         Updated assessment
     """
     try:
-        assessment = db.query(Assessment).filter(
-            Assessment.id == assessment_id
-        ).first()
-        
+        assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+
         if not assessment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Assessment {assessment_id} not found"
+                detail=f"Assessment {assessment_id} not found",
             )
-        
+
         # Update only provided fields
         update_dict = update_data.model_dump(exclude_unset=True)
-        
+
         # If clinical data changed, recalculate risk
         clinical_fields = {
-            'age', 'gender', 'consanguinity', 'family_neuro_history',
-            'seizures_history', 'brain_injury_history', 'psychiatric_diagnosis',
-            'substance_use', 'birth_complications', 'extreme_poverty',
-            'education_access_issues', 'healthcare_access', 'disability_diagnosis',
-            'social_support_level', 'breastfed_infancy', 'violence_exposure',
-            'suicide_ideation', 'psychotropic_medication'
+            "age",
+            "gender",
+            "consanguinity",
+            "family_neuro_history",
+            "seizures_history",
+            "brain_injury_history",
+            "psychiatric_diagnosis",
+            "substance_use",
+            "birth_complications",
+            "extreme_poverty",
+            "education_access_issues",
+            "healthcare_access",
+            "disability_diagnosis",
+            "social_support_level",
+            "breastfed_infancy",
+            "violence_exposure",
+            "suicide_ideation",
+            "psychotropic_medication",
         }
-        
+
         if any(field in update_dict for field in clinical_fields):
             # Update assessment fields first
             for field, value in update_dict.items():
                 setattr(assessment, field, value)
-            
+
             # Get updated feature data
             feature_data = {
                 "age": assessment.age,
@@ -349,13 +340,13 @@ async def update_assessment(
                 "disability_diagnosis": assessment.disability_diagnosis,
                 "social_support_level": assessment.social_support_level,
                 "breastfed_infancy": assessment.breastfed_infancy,
-                "violence_exposure": assessment.violence_exposure
+                "violence_exposure": assessment.violence_exposure,
             }
-            
+
             # Recalculate risk
             predictor = get_predictor()
             prediction_result = predictor.predict(feature_data)
-            
+
             # Update risk fields
             assessment.risk_score = prediction_result["risk_score"]
             assessment.risk_level = prediction_result["risk_level"]
@@ -366,19 +357,18 @@ async def update_assessment(
             # Update non-clinical fields only
             for field, value in update_dict.items():
                 setattr(assessment, field, value)
-        
+
         db.commit()
         db.refresh(assessment)
-        
+
         logger.info(f"Assessment {assessment_id} updated by {token_data.username}")
         return assessment
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating assessment {assessment_id}: {str(e)}")
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error updating assessment"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error updating assessment"
         )

@@ -2,25 +2,21 @@
 Pydantic schemas for request/response validation.
 """
 
-from app.schemas.request import (
-    AssessmentRequest,
-    PredictionRequest,
-    LoginRequest
-)
+from app.schemas.request import AssessmentRequest, PredictionRequest, LoginRequest
 from app.schemas.response import (
     AssessmentResponse,
     PredictionResponse,
     ErrorResponse,
     TokenResponse,
     ModelInfoResponse,
-    StatsResponse
+    StatsResponse,
 )
 from app.schemas.assessment import (
     AssessmentBase,
     AssessmentCreate,
     AssessmentUpdate,
     AssessmentInDB,
-    AssessmentDetail
+    AssessmentDetail,
 )
 
 __all__ = [
@@ -40,5 +36,5 @@ __all__ = [
     "AssessmentCreate",
     "AssessmentUpdate",
     "AssessmentInDB",
-    "AssessmentDetail"
+    "AssessmentDetail",
 ]

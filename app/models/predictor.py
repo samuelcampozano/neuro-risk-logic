@@ -51,9 +51,8 @@ class NeurodevelopmentalPredictor:
             self.model_metadata = model_data.get("metadata", {})
             self.is_loaded = True
 
-            logger.info(
-                f"Model loaded successfully. Version: {self.model_metadata.get('version', 'unknown')}"
-            )
+            model_version = self.model_metadata.get("version", "unknown")
+            logger.info(f"Model loaded successfully. Version: {model_version}")
             return True
 
         except Exception as e:
@@ -75,9 +74,7 @@ class NeurodevelopmentalPredictor:
 
         try:
             # Convert to feature vector
-            feature_vector = self.feature_definitions.get_feature_vector(
-                assessment_data
-            )
+            feature_vector = self.feature_definitions.get_feature_vector(assessment_data)
             feature_array = np.array([feature_vector])
 
             # Make prediction
@@ -108,9 +105,7 @@ class NeurodevelopmentalPredictor:
             risk_level = self.feature_definitions.get_risk_level(risk_probability)
 
             # Generate recommendations
-            recommendations = generate_recommendations(
-                risk_level, risk_factors, assessment_data
-            )
+            recommendations = generate_recommendations(risk_level, risk_factors, assessment_data)
 
             # Get interpretation
             interpretation = interpret_risk_level(risk_probability, confidence)
@@ -125,9 +120,7 @@ class NeurodevelopmentalPredictor:
                 "feature_importance": feature_importances,
                 "recommendations": recommendations,
                 "interpretation": interpretation,
-                "model_version": self.model_metadata.get(
-                    "version", settings.model_version
-                ),
+                "model_version": self.model_metadata.get("version", settings.model_version),
                 "prediction_timestamp": datetime.utcnow().isoformat(),
             }
 

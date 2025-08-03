@@ -18,13 +18,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.database import init_db, check_db_connection
 from app.models.predictor import load_model
-from app.routes import (
-    predict_router,
-    submit_router,
-    stats_router,
-    auth_router,
-    retrain_router
-)
+from app.routes import predict_router, submit_router, stats_router, auth_router, retrain_router
 from app.schemas.response import ErrorResponse, HealthCheckResponse
 
 from loguru import logger
@@ -33,12 +27,7 @@ from datetime import datetime
 
 
 # Configure Loguru
-logger.add(
-    "logs/app.log",
-    rotation="10 MB",
-    retention="10 days",
-    level=settings.log_level
-)
+logger.add("logs/app.log", rotation="10 MB", retention="10 days", level=settings.log_level)
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -54,22 +43,22 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Environment: {settings.environment}")
     logger.info("=" * 60)
-    
+
     try:
         # Initialize database
         logger.info("Initializing database...")
         init_db()
-        
+
         # Check database connection
         if check_db_connection():
             logger.info("✅ Database connection successful")
         else:
             logger.error("❌ Database connection failed")
-        
+
         # Load ML model
         logger.info("Loading ML model...")
         predictor = load_model()
-        
+
         if predictor.is_loaded:
             logger.info("✅ ML model loaded successfully")
             model_info = predictor.get_model_info()
@@ -77,22 +66,22 @@ async def lifespan(app: FastAPI):
             logger.info(f"Model version: {model_info.get('model_version', 'Unknown')}")
         else:
             logger.warning("⚠️ ML model not available - predictions will fail")
-        
+
         # Validate model
         is_valid, error_msg = predictor.validate_model()
         if is_valid:
             logger.info("✅ Model validation passed")
         else:
             logger.error(f"❌ Model validation failed: {error_msg}")
-        
+
         logger.info("Application startup completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Startup error: {str(e)}")
         raise
-    
+
     yield  # Application runs here
-    
+
     # Shutdown
     logger.info("Application shutting down...")
     logger.info("Shutdown completed")
@@ -126,7 +115,7 @@ Most endpoints require JWT authentication. Use `/api/v1/auth/login` to obtain a 
     lifespan=lifespan,
     docs_url="/docs" if not settings.is_production else None,
     redoc_url="/redoc" if not settings.is_production else None,
-    openapi_url="/openapi.json" if not settings.is_production else "/api/openapi.json"
+    openapi_url="/openapi.json" if not settings.is_production else "/api/openapi.json",
 )
 
 # Add rate limiter
@@ -140,7 +129,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
 )
 
 # Gzip compression for responses
@@ -149,9 +138,9 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Security middleware
 if settings.is_production:
     app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=["*.yourdomain.com", "yourdomain.com", "localhost"]
+        TrustedHostMiddleware, allowed_hosts=["*.yourdomain.com", "yourdomain.com", "localhost"]
     )
+
 
 # Request timing middleware
 @app.middleware("http")
@@ -163,6 +152,7 @@ async def add_process_time_header(request: Request, call_next):
     response.headers["X-Process-Time"] = f"{process_time:.3f}"
     return response
 
+
 # Include routers
 app.include_router(predict_router)
 app.include_router(submit_router)
@@ -170,12 +160,13 @@ app.include_router(stats_router)
 app.include_router(auth_router)
 app.include_router(retrain_router)
 
+
 # Root endpoint with rate limiting
 @app.get(
     "/",
     tags=["root"],
     summary="API Information",
-    description="Get general information about the API"
+    description="Get general information about the API",
 )
 @limiter.limit("10/minute")
 async def root(request: Request):
@@ -187,7 +178,7 @@ async def root(request: Request):
         "documentation": {
             "swagger": "/docs" if not settings.is_production else None,
             "redoc": "/redoc" if not settings.is_production else None,
-            "openapi": "/api/openapi.json"
+            "openapi": "/api/openapi.json",
         },
         "endpoints": {
             "health": "/health",
@@ -195,11 +186,12 @@ async def root(request: Request):
             "assessments": "/api/v1/assessments",
             "statistics": "/api/v1/stats",
             "authentication": "/api/v1/auth/login",
-            "retraining": "/api/v1/retrain"
+            "retraining": "/api/v1/retrain",
         },
         "environment": settings.environment,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
     }
+
 
 # Health check endpoint
 @app.get(
@@ -207,12 +199,12 @@ async def root(request: Request):
     response_model=HealthCheckResponse,
     tags=["monitoring"],
     summary="Health check",
-    description="Check system health and component status"
+    description="Check system health and component status",
 )
 async def health_check():
     """
     Comprehensive health check endpoint.
-    
+
     Returns:
         System health status with component details
     """
@@ -220,29 +212,26 @@ async def health_check():
         "status": "healthy",
         "version": settings.app_version,
         "timestamp": datetime.utcnow(),
-        "services": {}
+        "services": {},
     }
-    
+
     # Check database
     try:
         if check_db_connection():
             health_status["services"]["database"] = {
                 "status": "connected",
-                "response_time_ms": 5  # Mock value
+                "response_time_ms": 5,  # Mock value
             }
         else:
             health_status["services"]["database"] = {
                 "status": "disconnected",
-                "response_time_ms": -1
+                "response_time_ms": -1,
             }
             health_status["status"] = "degraded"
     except Exception as e:
-        health_status["services"]["database"] = {
-            "status": "error",
-            "error": str(e)
-        }
+        health_status["services"]["database"] = {"status": "error", "error": str(e)}
         health_status["status"] = "unhealthy"
-    
+
     # Check ML model
     try:
         predictor = load_model()
@@ -251,27 +240,20 @@ async def health_check():
             health_status["services"]["ml_model"] = {
                 "status": "loaded",
                 "version": model_info.get("model_version", "unknown"),
-                "memory_usage_mb": 150  # Mock value
+                "memory_usage_mb": 150,  # Mock value
             }
         else:
-            health_status["services"]["ml_model"] = {
-                "status": "not_loaded"
-            }
+            health_status["services"]["ml_model"] = {"status": "not_loaded"}
             health_status["status"] = "degraded"
     except Exception as e:
-        health_status["services"]["ml_model"] = {
-            "status": "error",
-            "error": str(e)
-        }
+        health_status["services"]["ml_model"] = {"status": "error", "error": str(e)}
         health_status["status"] = "unhealthy"
-    
+
     # Mock cache status
-    health_status["services"]["cache"] = {
-        "status": "active",
-        "hit_rate": 0.85
-    }
-    
+    health_status["services"]["cache"] = {"status": "active", "hit_rate": 0.85}
+
     return health_status
+
 
 # Exception handlers
 @app.exception_handler(StarletteHTTPException)
@@ -283,21 +265,24 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "error": exc.__class__.__name__,
             "detail": exc.detail,
             "status_code": exc.status_code,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors with detailed information."""
     errors = []
     for error in exc.errors():
-        errors.append({
-            "field": ".".join(str(loc) for loc in error["loc"]),
-            "message": error["msg"],
-            "type": error["type"]
-        })
-    
+        errors.append(
+            {
+                "field": ".".join(str(loc) for loc in error["loc"]),
+                "message": error["msg"],
+                "type": error["type"],
+            }
+        )
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -305,44 +290,47 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "detail": "Request validation failed",
             "errors": errors,
             "status_code": 422,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
+
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    
+
     # Don't expose internal errors in production
     if settings.is_production:
         detail = "An internal error occurred"
     else:
         detail = str(exc)
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": "InternalServerError",
             "detail": detail,
             "status_code": 500,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
+
 
 # Prometheus metrics endpoint (optional)
 if settings.enable_metrics:
     from prometheus_client import make_asgi_app
+
     metrics_app = make_asgi_app()
     app.mount(settings.metrics_endpoint, metrics_app)
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.is_development,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )
