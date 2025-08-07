@@ -133,8 +133,13 @@ class Settings(BaseSettings):
 
         # Get values from validation context
         values = info.data
+        environment = values.get("environment", "development")
 
-        # Try to construct from components
+        # Use SQLite for testing and CI environments
+        if environment.lower() in ("test", "testing", "ci"):
+            return "sqlite:///./data/test_neurorisk.db"
+
+        # Try to construct from components for other environments
         user = values.get("postgres_user", "postgres")
         password = values.get("postgres_password", "postgres")
         host = values.get("postgres_host", "localhost")
@@ -153,6 +158,11 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         """Check if running in development mode."""
         return self.environment.lower() == "development"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if running in testing mode."""
+        return self.environment.lower() in ("test", "testing", "ci")
 
     def get_model_path(self, version: Optional[str] = None) -> Path:
         """Get path to model file."""

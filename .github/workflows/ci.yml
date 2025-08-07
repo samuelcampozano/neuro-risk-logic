@@ -60,6 +60,9 @@ jobs:
         mypy app/
     
     - name: Run basic tests
+      env:
+        ENV: ci
+        DATABASE_URL: sqlite:///./data/test_neurorisk.db
       run: |
         pytest tests/test_basic.py -v
     

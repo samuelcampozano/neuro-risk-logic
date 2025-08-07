@@ -34,39 +34,15 @@ if settings.database_url.startswith("sqlite"):
 
 elif settings.database_url.startswith("postgresql"):
     # PostgreSQL configuration for production
-    # For Docker environments, we might need to handle connection retries
-    import time
-    from sqlalchemy.exc import OperationalError
-
-    max_retries = 5
-    retry_interval = 5
-
-    for attempt in range(max_retries):
-        try:
-            engine = create_engine(
-                settings.database_url,
-                pool_pre_ping=True,
-                pool_recycle=300,
-                pool_size=10,
-                max_overflow=20,
-                echo=settings.debug,
-            )
-            # Test connection
-            with engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            logger.info("Successfully connected to PostgreSQL database")
-            break
-        except OperationalError as e:
-            if attempt < max_retries - 1:
-                logger.warning(
-                    f"Failed to connect to PostgreSQL "
-                    f"(attempt {attempt + 1}/{max_retries}): {str(e)}"
-                )
-                logger.info(f"Retrying in {retry_interval} seconds...")
-                time.sleep(retry_interval)
-            else:
-                logger.error(f"Failed to connect to PostgreSQL after {max_retries} attempts")
-                raise
+    engine = create_engine(
+        settings.database_url,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_size=10,
+        max_overflow=20,
+        echo=settings.debug,
+    )
+    logger.info("PostgreSQL engine created (connection will be established on first use)")
 
 else:
     raise ValueError(f"Unsupported database URL: {settings.database_url}")
@@ -129,6 +105,44 @@ def check_db_connection() -> bool:
     except Exception as e:
         logger.error(f"Database connection check failed: {str(e)}")
         return False
+
+
+def ensure_postgresql_connection(max_retries: int = 5, retry_interval: int = 5) -> bool:
+    """
+    Ensure PostgreSQL connection with retry logic.
+    Only needed for production environments.
+    
+    Args:
+        max_retries: Maximum number of connection attempts
+        retry_interval: Seconds to wait between retries
+        
+    Returns:
+        bool: True if connection successful, False otherwise
+    """
+    if not settings.database_url.startswith("postgresql"):
+        return True  # Not PostgreSQL, no need to retry
+        
+    import time
+    from sqlalchemy.exc import OperationalError
+    
+    for attempt in range(max_retries):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logger.info("Successfully connected to PostgreSQL database")
+            return True
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                logger.warning(
+                    f"Failed to connect to PostgreSQL "
+                    f"(attempt {attempt + 1}/{max_retries}): {str(e)}"
+                )
+                logger.info(f"Retrying in {retry_interval} seconds...")
+                time.sleep(retry_interval)
+            else:
+                logger.error(f"Failed to connect to PostgreSQL after {max_retries} attempts")
+                return False
+    return False
 
 
 def get_db_stats() -> dict:
