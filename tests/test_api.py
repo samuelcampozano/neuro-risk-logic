@@ -46,14 +46,14 @@ class TestPredictionEndpoint:
             "disability_diagnosis": False,
             "social_support_level": "moderate",
             "breastfed_infancy": True,
-            "violence_exposure": False
+            "violence_exposure": False,
         }
-        
+
         response = client.post("/api/v1/predict", json=test_data)
-        
+
         # Should return 200 or 500 (if model not loaded), but not 404/422
         assert response.status_code in [200, 500]
-        
+
         if response.status_code == 200:
             data = response.json()
             # Check response structure
@@ -67,10 +67,7 @@ class TestAuthEndpoint:
 
     def test_auth_endpoint_exists(self):
         """Test auth endpoint exists."""
-        response = client.post(
-            "/api/v1/auth/login",
-            json={"api_key": "test-key"}
-        )
+        response = client.post("/api/v1/auth/login", json={"api_key": "test-key"})
         # Should return 401 (unauthorized) or 200, but not 404
         assert response.status_code in [200, 401]
 
@@ -111,9 +108,9 @@ class TestAssessmentsEndpoint:
             "violence_exposure": False,
             "consent_data_usage": True,
             "consent_research": True,
-            "consent_contact": False
+            "consent_contact": False,
         }
-        
+
         response = client.post("/api/v1/assessments", json=test_data)
         # Should work without auth (public endpoint) or require auth
         assert response.status_code in [200, 201, 401, 500]

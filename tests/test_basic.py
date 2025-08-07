@@ -31,20 +31,21 @@ class TestProjectStructure:
         """Test config module can be imported."""
         try:
             from app.config import settings
+
             assert settings is not None
-            assert hasattr(settings, 'app_name')
+            assert hasattr(settings, "app_name")
         except ImportError as e:
             pytest.fail(f"Failed to import config: {e}")
 
     def test_basic_settings(self):
         """Test basic settings are properly configured."""
         from app.config import settings
-        
+
         # Test required settings exist
-        assert hasattr(settings, 'app_name')
-        assert hasattr(settings, 'database_url')
-        assert hasattr(settings, 'secret_key')
-        
+        assert hasattr(settings, "app_name")
+        assert hasattr(settings, "database_url")
+        assert hasattr(settings, "secret_key")
+
         # Test app name is set
         assert settings.app_name == "NeuroRiskLogic"
 
@@ -91,8 +92,8 @@ class TestSecurityBasics:
         """Test .gitignore exists and contains sensitive patterns."""
         gitignore_file = project_root / ".gitignore"
         assert gitignore_file.exists()
-        
-        with open(gitignore_file, 'r') as f:
+
+        with open(gitignore_file, "r") as f:
             content = f.read()
             # Check for important patterns
             assert ".env" in content
@@ -117,6 +118,7 @@ class TestRequirements:
         """Test pytest is available."""
         try:
             import pytest
+
             assert pytest is not None
         except ImportError:
             pytest.fail("pytest not available")
