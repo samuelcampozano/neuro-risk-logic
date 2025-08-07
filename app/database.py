@@ -111,20 +111,20 @@ def ensure_postgresql_connection(max_retries: int = 5, retry_interval: int = 5) 
     """
     Ensure PostgreSQL connection with retry logic.
     Only needed for production environments.
-    
+
     Args:
         max_retries: Maximum number of connection attempts
         retry_interval: Seconds to wait between retries
-        
+
     Returns:
         bool: True if connection successful, False otherwise
     """
     if not settings.database_url.startswith("postgresql"):
         return True  # Not PostgreSQL, no need to retry
-        
+
     import time
     from sqlalchemy.exc import OperationalError
-    
+
     for attempt in range(max_retries):
         try:
             with engine.connect() as conn:
