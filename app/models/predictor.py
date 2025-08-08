@@ -193,3 +193,17 @@ def reload_predictor() -> bool:
     """
     predictor = get_predictor()
     return predictor.reload_model()
+
+
+def load_model() -> NeurodevelopmentalPredictor:
+    """
+    Load model function for backward compatibility.
+    
+    Returns:
+        NeurodevelopmentalPredictor instance
+    """
+    return get_predictor()
+
+
+# Backward compatibility alias
+NeuroriskPredictor = NeurodevelopmentalPredictor
