@@ -20,6 +20,7 @@ from typing import Dict, Any, List, Tuple, Optional
 
 class NumpyEncoder(json.JSONEncoder):
     """Custom JSON encoder for numpy types."""
+
     def default(self, obj):
         if isinstance(obj, np.integer):
             return int(obj)
@@ -30,6 +31,7 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, np.bool_):
             return bool(obj)
         return super().default(obj)
+
 
 import matplotlib.pyplot as plt
 import seaborn as sns
