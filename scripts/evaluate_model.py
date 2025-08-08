@@ -17,6 +17,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
 
+
+class NumpyEncoder(json.JSONEncoder):
+    """Custom JSON encoder for numpy types."""
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        return super().default(obj)
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
@@ -485,7 +499,7 @@ class ModelEvaluator:
 
         # Classification report
         y_pred = self.model.predict(X_test)
-        class_report = classification_report(y_test, y_pred, output_dict=True)
+        class_report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
 
         # Compile full report
         report = {
@@ -514,7 +528,7 @@ class ModelEvaluator:
             / f"evaluation_report_{self.metadata.get('version', 'current')}.json"
         )
         with open(report_path, "w") as f:
-            json.dump(report, f, indent=2)
+            json.dump(report, f, indent=2, cls=NumpyEncoder)
 
         logger.info(f"Saved evaluation report to {report_path}")
 
