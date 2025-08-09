@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for FastAPI application
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,8 +15,8 @@ WORKDIR /app
 # Copy requirements first for better cache utilization
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --user --no-cache-dir -r requirements.txt
+# Install Python dependencies with suppressed warnings
+RUN pip install --user --no-cache-dir --no-warn-script-location -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim
@@ -51,7 +51,7 @@ USER appuser
 
 # Add Python binaries to PATH
 ENV PATH=/home/appuser/.local/bin:$PATH
-ENV PYTHONPATH=/app:$PYTHONPATH
+ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8000

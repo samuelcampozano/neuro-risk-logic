@@ -164,6 +164,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, model-validation]
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     
     steps:
     - uses: actions/checkout@v4
@@ -182,23 +185,32 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/neurorisklogic
+        images: ghcr.io/${{ github.repository }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
     
-    - name: Build and push Docker image
+    - name: Build Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./deployment/Dockerfile
-        push: true
+        push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        load: true
+    
+    - name: Push to GitHub Container Registry
+      run: |
+        echo "Pushing Docker images to GHCR..."
+        for tag in $(echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'); do
+          echo "Pushing $tag"
+          docker push "$tag" || echo "Failed to push $tag - continuing..."
+        done
 
   deploy:
     runs-on: ubuntu-latest
