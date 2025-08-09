@@ -1,9 +1,11 @@
 # Calculadora de Riesgo de la Alteración en la Salud Mental 🧠
 
+[![CI/CD Pipeline](https://github.com/samuelcampozano/neuro-risk-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelcampozano/neuro-risk-logic/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://github.com/samuelcampozano/neuro-risk-logic/pkgs/container/neuro-risk-logic)
 
 ## Overview
 
@@ -17,10 +19,14 @@ Calculadora de Riesgo de la Alteración en la Salud Mental (Mental Health Risk C
 - 📊 **Detailed Analytics**: Risk factor identification and clinical recommendations
 - 🚀 **Production Ready**: Built with FastAPI, PostgreSQL, and modern Python practices
 - 📈 **Model Retraining**: Dynamic model updates as new data becomes available
+- ⚡ **CI/CD Pipeline**: Automated testing, security scanning, and containerized deployment
+- 🐳 **Docker Support**: Multi-stage builds with security best practices
+- 🔒 **Security Scanning**: Automated vulnerability detection with Bandit
 
 ## Table of Contents
 
 - [Architecture](#architecture)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Quick Start](#quick-start)
 - [API Documentation](#api-documentation)
 - [Features](#features)
@@ -59,6 +65,46 @@ graph TB
 - **Authentication**: JWT with python-jose
 - **Data Validation**: Pydantic v2
 - **ORM**: SQLAlchemy 2.0
+
+## CI/CD Pipeline
+
+This project features a comprehensive CI/CD pipeline that ensures code quality, security, and reliable deployments:
+
+### Pipeline Components
+
+#### 🧪 **Automated Testing**
+- **Unit Tests**: Core functionality validation
+- **Integration Tests**: End-to-end API testing with PostgreSQL
+- **Code Coverage**: Tracked via Codecov integration
+- **Type Checking**: MyPy static analysis for type safety
+
+#### 🔍 **Code Quality & Security**
+- **Linting**: Black formatter and flake8 for consistent code style
+- **Security Scanning**: Bandit vulnerability detection
+- **Model Validation**: Automated ML model performance checks (AUC > 0.7)
+- **Synthetic Data Generation**: Automated test data creation for CI
+
+#### 🐳 **Containerization & Deployment**
+- **Multi-stage Docker builds** with security best practices
+- **GitHub Container Registry** integration
+- **Non-root container execution** for enhanced security
+- **Health checks** and proper signal handling
+
+#### 📊 **Pipeline Status**
+The pipeline runs automatically on:
+- Every push to `main` and `develop` branches
+- All pull requests to `main`
+- Builds Docker images only on main branch merges
+
+**Current Status**: [![CI/CD Pipeline](https://github.com/samuelcampozano/neuro-risk-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelcampozano/neuro-risk-logic/actions/workflows/ci.yml)
+
+### Benefits for Production
+
+- ✅ **Zero-downtime deployments** with containerization
+- ✅ **Automated quality gates** prevent broken code from reaching production
+- ✅ **Security-first approach** with vulnerability scanning and non-root containers
+- ✅ **ML model validation** ensures consistent performance across deployments
+- ✅ **Professional DevOps practices** demonstrating enterprise-ready development
 
 ## Quick Start
 
